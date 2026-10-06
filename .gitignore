@@ -1,0 +1,5 @@
+graph.pkl
+__pycache__/
+.DS_Store
+data/basic-english-850.txt
+data/thing-explainer-1000.txt

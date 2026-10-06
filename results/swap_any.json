@@ -1,0 +1,242 @@
+[
+ {
+  "k": 1,
+  "set": [
+   "more"
+  ],
+  "added": [
+   "more"
+  ],
+  "removed": [],
+  "known": 444,
+  "cov": 0.003489934996030592,
+  "cov_single": 0.005325945153524404,
+  "greedy_known": 92
+ },
+ {
+  "k": 2,
+  "set": [
+   "more",
+   "move"
+  ],
+  "added": [
+   "move"
+  ],
+  "removed": [],
+  "known": 508,
+  "cov": 0.0039929886891521185,
+  "cov_single": 0.005998412975939101,
+  "greedy_known": 114
+ },
+ {
+  "k": 3,
+  "set": [
+   "give",
+   "more",
+   "move"
+  ],
+  "added": [
+   "give"
+  ],
+  "removed": [],
+  "known": 596,
+  "cov": 0.004684687517194218,
+  "cov_single": 0.00684572243218162,
+  "greedy_known": 133
+ },
+ {
+  "k": 4,
+  "set": [
+   "give",
+   "more",
+   "move",
+   "use"
+  ],
+  "added": [
+   "use"
+  ],
+  "removed": [],
+  "known": 861,
+  "cov": 0.00676764421527554,
+  "cov_single": 0.009831479563702877,
+  "greedy_known": 162
+ },
+ {
+  "k": 5,
+  "set": [
+   "more",
+   "move",
+   "person",
+   "place",
+   "use"
+  ],
+  "added": [
+   "person",
+   "place"
+  ],
+  "removed": [
+   "give"
+  ],
+  "known": 1061,
+  "cov": 0.008339687006280311,
+  "cov_single": 0.01195647788253332,
+  "greedy_known": 184
+ },
+ {
+  "k": 6,
+  "set": [
+   "cause",
+   "more",
+   "move",
+   "person",
+   "place",
+   "use"
+  ],
+  "added": [
+   "cause"
+  ],
+  "removed": [],
+  "known": 1251,
+  "cov": 0.009833127657734843,
+  "cov_single": 0.013946982636880826,
+  "greedy_known": 208
+ },
+ {
+  "k": 7,
+  "set": [
+   "cause",
+   "more",
+   "move",
+   "person",
+   "place",
+   "time",
+   "use"
+  ],
+  "added": [
+   "time"
+  ],
+  "removed": [],
+  "known": 1517,
+  "cov": 0.011923944569771189,
+  "cov_single": 0.016744448778125965,
+  "greedy_known": 227
+ },
+ {
+  "k": 8,
+  "set": [
+   "cause",
+   "language",
+   "move",
+   "person",
+   "place",
+   "quality",
+   "time",
+   "use"
+  ],
+  "added": [
+   "language",
+   "quality"
+  ],
+  "removed": [
+   "more"
+  ],
+  "known": 94836,
+  "cov": 0.7454312506386424,
+  "cov_single": 0.8041908194692884,
+  "greedy_known": 242
+ },
+ {
+  "k": 9,
+  "set": [
+   "cause",
+   "language",
+   "move",
+   "often",
+   "person",
+   "place",
+   "quality",
+   "time",
+   "use"
+  ],
+  "added": [
+   "often"
+  ],
+  "removed": [],
+  "known": 97296,
+  "cov": 0.7647673769680011,
+  "cov_single": 0.8203031484943445,
+  "greedy_known": 246
+ },
+ {
+  "k": 10,
+  "set": [
+   "cause",
+   "european",
+   "language",
+   "move",
+   "often",
+   "person",
+   "place",
+   "quality",
+   "time",
+   "use"
+  ],
+  "added": [
+   "european"
+  ],
+  "removed": [],
+  "known": 98488,
+  "cov": 0.7741367520023895,
+  "cov_single": 0.8237865318144527,
+  "greedy_known": 247
+ },
+ {
+  "k": 11,
+  "set": [
+   "asia",
+   "cause",
+   "european",
+   "language",
+   "move",
+   "often",
+   "person",
+   "place",
+   "quality",
+   "time",
+   "use"
+  ],
+  "added": [
+   "asia"
+  ],
+  "removed": [],
+  "known": 99628,
+  "cov": 0.7830973959111167,
+  "cov_single": 0.8277271932538028,
+  "greedy_known": 257
+ },
+ {
+  "k": 12,
+  "set": [
+   "asia",
+   "cause",
+   "european",
+   "existing",
+   "language",
+   "move",
+   "often",
+   "person",
+   "place",
+   "quality",
+   "time",
+   "use"
+  ],
+  "added": [
+   "existing"
+  ],
+  "removed": [],
+  "known": 100658,
+  "cov": 0.7911934162847912,
+  "cov_single": 0.8336314607346038,
+  "greedy_known": 258
+ }
+]

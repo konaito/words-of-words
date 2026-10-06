@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Words of Words</title>
+<meta name="description" content="8つの英単語を種にして、127,223語の英英辞書を言葉だけでどこまで書けるかを試すゲーム。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Words of Words">
+<meta property="og:title" content="Words of Words">
+<meta property="og:description" content="8つの英単語を種にして、127,223語の英英辞書を言葉だけでどこまで書けるかを試すゲーム。">
+<meta property="og:url" content="https://konaito.github.io/words-of-words/">
+<meta property="og:image" content="https://konaito.github.io/words-of-words/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Words of Words。ことばで、ことばを。">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Words of Words">
+<meta name="twitter:description" content="8つの英単語を種にして、127,223語の英英辞書を言葉だけでどこまで書けるかを試すゲーム。">
+<meta name="twitter:image" content="https://konaito.github.io/words-of-words/card.png">
+<style>
+/* 960x540 の一枚の書物。扉・机・頁・奥付の4面を同じ枠で切り替える。羊皮紙に墨、朱は印、金は点、青緑は既知 */
+:root {
+  --parch: #e4d3b0;
+  --ink: #1c140e;
+  --shu: #8e2f2f;
+  --gold: #a7843f;
+  --known: #2f6f62;
+  --gray: #8a7d6b;
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", serif;
+  color-scheme: light;
+}
+html, body { margin: 0; height: 100%; background: var(--ink); color: var(--ink); overflow: hidden; }
+#viewport { position: fixed; inset: 0; overflow: hidden; background: var(--ink); }
+#stage { position: absolute; left: 0; top: 0; width: 960px; height: 540px; transform-origin: 0 0; background: var(--parch); font-family: var(--font); font-size: 15px; line-height: 1.6; overflow: hidden; }
+.screen { position: absolute; inset: 0; }
+.frame { position: absolute; border: 4px double var(--ink); box-sizing: border-box; }
+button { font: inherit; color: var(--ink); background: var(--parch); border: 3px double var(--ink); border-radius: 2px; padding: 3px 16px; cursor: pointer; }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { color: var(--gray); border-color: var(--gray); cursor: default; }
+button:focus-visible { outline: 2px solid var(--shu); outline-offset: 2px; }
+.btn-main { font-size: 17px; padding: 4px 22px; }
+.keys { font-size: 12px; color: var(--gray); }
+.brand { position: absolute; left: 24px; top: 9px; font-size: 15px; letter-spacing: 0.04em; }
+.brand b { color: var(--shu); font-weight: 600; }
+.lang { position: absolute; top: 8px; right: 24px; display: flex; gap: 4px; z-index: 5; }
+.lang button { font-size: 12px; padding: 0 8px; line-height: 20px; }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--parch); }
+.ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 扉 */
+#door .frame { left: 24px; top: 40px; width: 912px; height: 476px; display: grid; grid-template-columns: 1fr 1fr; }
+.pg { position: relative; padding: 20px 30px; box-sizing: border-box; }
+.pg.left { border-right: 1px solid var(--ink); }
+.ch + .ch { margin-top: 18px; }
+.ch h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; line-height: 1.4; }
+.ch h2 .n { color: var(--shu); margin-right: 8px; }
+.ch p { margin: 0; font-size: 14px; line-height: 1.7; max-height: calc(14px * 1.7 * 4); overflow: hidden; }
+.toc h2 { margin: 0 0 12px; font-size: 18px; font-weight: 600; letter-spacing: 0.3em; }
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc li { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px dotted var(--gray); font-size: 14px; }
+.toc li .n { width: 2.2em; color: var(--shu); flex: none; }
+.toc li .d { color: var(--gray); margin-left: auto; white-space: nowrap; }
+.toc li.part .n { color: var(--gold); }
+html[lang="en"] .toc li .n { width: 5em; }
+.toc .go { position: absolute; left: 30px; right: 30px; bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* 机 */
+#desk .frame { left: 24px; top: 40px; width: 912px; height: 476px; padding: 14px 20px; }
+.lead { margin: 0 0 10px; font-size: 14px; height: 24px; }
+.cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.card { height: 40px; font-size: 16px; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card[aria-disabled="true"] { color: var(--gray); border-color: var(--gray); cursor: default; }
+.card.placed { border-style: dashed; border-width: 2px; border-color: var(--gray); color: var(--gray); }
+.tray { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ink); }
+.tray .label { font-size: 13px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+.tray .label b { color: var(--shu); font-weight: 600; font-variant-numeric: tabular-nums; }
+.slots { display: grid; grid-template-columns: repeat(8, 1fr) 120px; gap: 6px; align-items: stretch; }
+.slot { height: 44px; font-size: 15px; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slot:disabled { border: 2px dashed var(--gray); background: transparent; }
+.slots .open { font-size: 17px; }
+.slots .open:not(:disabled) { border-color: var(--shu); color: var(--shu); }
+#desk .keys { position: absolute; left: 20px; bottom: 10px; }
+
+/* 頁 */
+.hud { left: 24px; top: 36px; width: 912px; height: 56px; display: flex; align-items: center; gap: 14px; padding: 0 12px; }
+.hud .picks { display: flex; gap: 4px; flex: 1; min-width: 0; overflow: hidden; }
+.hud .picks span { font-size: 13px; padding: 0 5px; border: 1px solid var(--gray); color: var(--gray); white-space: nowrap; }
+.hud .picks span.done { color: var(--ink); border-color: var(--ink); }
+.hud .picks span.now { color: var(--shu); border-color: var(--shu); }
+.hud .stat { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hud .stat .k { font-size: 12px; color: var(--gray); }
+.hud .stat .v { font-size: 22px; color: var(--known); font-weight: 600; min-width: 84px; text-align: right; }
+.hud .stat .p { font-size: 15px; min-width: 52px; text-align: right; }
+.hud .stat .w { font-size: 17px; min-width: 34px; }
+.leaf { left: 24px; top: 100px; width: 600px; height: 400px; padding: 10px 18px; }
+.leaf .head { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray); border-bottom: 1px solid var(--ink); padding-bottom: 4px; margin-bottom: 8px; }
+.leaf .body { height: 338px; overflow: hidden; font-size: 14px; line-height: 1.75; word-spacing: 0.3em; }
+.leaf .body span { color: var(--known); animation: lit 700ms ease-out; }
+.leaf .body span.seed { color: var(--shu); font-weight: 600; }
+.leaf .body .status { color: var(--gray); animation: none; }
+@keyframes lit { 0% { color: var(--parch); background: var(--shu); } 35% { color: var(--parch); background: var(--gold); } 100% { background: transparent; } }
+.log { left: 636px; top: 100px; width: 300px; height: 400px; padding: 10px 12px; }
+.log h3 { margin: 0 0 6px; font-size: 12px; font-weight: 400; color: var(--gray); border-bottom: 1px solid var(--ink); padding-bottom: 4px; }
+.log ol { list-style: none; margin: 0; padding: 0; }
+.log li { padding: 3px 0; border-bottom: 1px dotted var(--gray); font-size: 13px; line-height: 1.45; }
+.log li .hw { color: var(--known); font-weight: 600; }
+.log li .hw.seed { color: var(--shu); }
+.log li .def { color: var(--ink); }
+.log li .tag { color: var(--gray); }
+.fillbar { position: absolute; left: 24px; right: 24px; top: 506px; display: flex; align-items: center; justify-content: space-between; }
+.fillbar button { padding: 0 16px; line-height: 22px; }
+
+/* 奥付 */
+#colophon .frame { left: 24px; top: 40px; width: 912px; height: 476px; padding: 18px 26px; display: grid; grid-template-columns: 360px 1fr; grid-template-rows: auto 1fr auto; gap: 0 32px; }
+.colo-title { grid-column: 1 / -1; font-size: 18px; font-weight: 600; letter-spacing: 0.3em; margin: 0 0 12px; border-bottom: 1px solid var(--ink); padding-bottom: 6px; }
+.you .label { font-size: 13px; color: var(--gray); }
+.you .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 14px; }
+.you .chips span { font-size: 13px; padding: 0 5px; border: 1px solid var(--ink); }
+.you .num { font-size: 46px; line-height: 1.1; color: var(--known); font-weight: 600; font-variant-numeric: tabular-nums; }
+.you .pct { font-size: 15px; font-variant-numeric: tabular-nums; }
+.scale { position: relative; height: 34px; margin-top: 16px; border-bottom: 2px solid var(--ink); }
+.scale i { position: absolute; bottom: -5px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--gold); }
+.scale i.me { width: 0; height: 0; border-radius: 0; background: none; margin-left: -6px; bottom: 2px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid var(--shu); }
+.scale .t0, .scale .t1 { position: absolute; bottom: -22px; font-size: 11px; color: var(--gray); font-variant-numeric: tabular-nums; }
+.scale .t0 { left: 0; } .scale .t1 { right: 0; }
+.refs { list-style: none; margin: 0; padding: 0; }
+.refs li { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 4px 10px; align-items: baseline; padding: 8px 10px; border: 2px solid transparent; }
+.refs li + li { border-top: 1px dotted var(--gray); }
+.refs li.match { border: 2px solid var(--shu); }
+.refs li i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
+.refs li .name { font-size: 14px; line-height: 1.45; }
+.refs li .val { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.refs li .note { grid-column: 2 / -1; font-size: 12px; color: var(--gray); }
+.colo-foot { grid-column: 1 / -1; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; border-top: 1px solid var(--ink); padding-top: 10px; }
+.colo-foot p { margin: 0; font-size: 13px; }
+.colo-foot .credit { font-size: 11px; color: var(--gray); margin-top: 2px; }
+.colo-foot .btns { display: flex; gap: 8px; flex: none; }
+@media (prefers-reduced-motion: reduce) { .leaf .body span { animation: none; } }
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <div class="brand"><b>Words of Words</b> <span data-t="brand"></span></div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="lang-ja" type="button" aria-pressed="true">日本語</button>
+      <button id="lang-en" type="button" aria-pressed="false">English</button>
+    </div>
+
+    <section class="screen" id="door">
+      <div class="frame">
+        <div class="pg left" id="chapters"></div>
+        <div class="pg toc">
+          <h2 data-t="tocTitle"></h2>
+          <ol id="toc"></ol>
+          <div class="go"><span class="keys" data-t="doorKeys"></span><button class="btn-main" id="to-desk" type="button" data-t="toDesk"></button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="desk" hidden>
+      <div class="frame">
+        <p class="lead" data-t="deskLead"></p>
+        <div class="cards" id="cards" role="group"></div>
+        <div class="tray">
+          <div class="label"><span data-t="trayLabel"></span><b id="tray-count"></b></div>
+          <div class="slots" id="slots"></div>
+        </div>
+        <div class="keys" data-t="deskKeys"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="fill" hidden>
+      <div class="frame hud">
+        <div class="picks" id="hud-picks"></div>
+        <div class="stat"><span class="k" data-t="reach"></span><span class="v" id="hud-count">0</span><span class="k">/ 127,223</span><span class="p" id="hud-pct">0.0%</span></div>
+        <div class="stat"><span class="k" data-t="wave"></span><span class="w" id="hud-wave">0/8</span></div>
+      </div>
+      <div class="frame leaf">
+        <div class="head"><span data-t="leafHead"></span><span id="leaf-page"></span></div>
+        <div class="body" id="leaf-body"></div>
+      </div>
+      <div class="frame log">
+        <h3 data-t="logTitle"></h3>
+        <ol id="log"></ol>
+      </div>
+      <div class="fillbar"><span class="keys" id="fill-keys"></span><button id="fill-btn" type="button"></button></div>
+    </section>
+
+    <section class="screen" id="colophon" hidden>
+      <div class="frame">
+        <h2 class="colo-title" data-t="coloTitle"></h2>
+        <div class="you">
+          <div class="label" data-t="yourWords"></div>
+          <div class="chips" id="colo-picks"></div>
+          <div class="label" data-t="yourReach"></div>
+          <div class="num" id="colo-num"></div>
+          <div class="pct" id="colo-pct"></div>
+          <div class="scale" id="colo-scale"></div>
+        </div>
+        <ol class="refs" id="refs"></ol>
+        <div class="colo-foot">
+          <div><p data-t="meaning"></p><div class="credit" data-t="credit"></div></div>
+          <div class="btns"><button id="again" type="button" data-t="again"></button><button id="to-door" type="button" data-t="toDoor"></button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="engine.js"></script>
+<script>
+(() => {
+  const TOTAL = 127223, SLOTS = 8;
+  const BEST = ["move", "use", "person", "place", "cause", "time", "language", "quality"];
+  const REFS = [
+    { key: "refBest", n: 94836, best: true },
+    { key: "refBasic", n: 97689 },
+    { key: "refThing", n: 97924 },
+  ];
+  // 候補30語。並びは固定で混ぜてある
+  const CANDS = ["water", "time", "more", "love", "person", "state", "light", "give", "quality", "mother",
+    "small", "move", "word", "people", "sun", "part", "language", "know", "make", "fire",
+    "use", "body", "life", "act", "place", "good", "characteristic", "thing", "cause", "see"];
+
+  const T = {
+    ja: {
+      brand: "ことばで、ことばを",
+      chapters: [
+        ["辞書は定義の循環", "英英辞書の定義は、別の見出し語で書かれています。その語の定義も、また別の見出し語でできています。たどり続けると、いつか同じ語に戻ってきます。"],
+        ["種語とは何か", "循環の外から持ち込む、定義なしで知っている語を種語と呼びます。種語と機能語だけで定義が読めた語は既知になり、次の定義を読む材料になります。"],
+        ["このゲームは理解ではなく到達", "候補30語から種語を8語選び、127,223語の辞書がどこまで埋まるかを数えます。数えるのは定義の文字列をたどれた語で、意味が分かった語ではありません。"],
+      ],
+      tocTitle: "目次",
+      tocParts: [["机", "種語を8語選ぶ"], ["頁", "辞書が埋まる"], ["奥付", "結果"]],
+      tocLeft: "左頁",
+      doorKeys: "Enterで次へ",
+      toDesk: "机に向かう",
+      deskLead: "札を8枚選んで下の枠に置きます。置いた札をもう一度押すと机に戻ります。",
+      trayLabel: "種語の枠",
+      open: "開く",
+      deskKeys: "矢印で札を移動、Enterで出し入れ、Backspaceで最後の枠を外す、Escで扉へ",
+      reach: "到達", wave: "波",
+      leafHead: "あなたの辞書",
+      page: (n) => `第${n}頁`,
+      logTitle: "開いた語と、開いた定義",
+      seedTag: "種語",
+      loading: "辞書を開いています。",
+      loadErr: "辞書のデータを読み込めませんでした。ページを再読み込みしてください。",
+      skip: "飛ばす", toColophon: "奥付へ",
+      fillKeys: "Enterで飛ばす、Escで扉へ", fillKeysDone: "Enterで奥付へ、Escで扉へ",
+      coloTitle: "奥付",
+      yourWords: "あなたの8語", yourReach: "あなたの到達",
+      ofTotal: (p) => `127,223語中 ${p}`,
+      refBest: "move, use, person, place, cause, time, language, quality",
+      refBasic: "Basic English（機能語を除く781語）",
+      refThing: "Thing Explainer（機能語と変化形を除く788語）",
+      refVal: (n, p) => `${n}（${p}）`,
+      bestNote: "1語でも抜くと1,318語以下",
+      meaning: "到達は「定義の文字列をたどれた」ことで、「意味が分かった」ことではありません。",
+      credit: "辞書 Open English WordNet 2025（CC BY 4.0）",
+      again: "もう一度", toDoor: "扉へ",
+    },
+    en: {
+      brand: "Words, made of words",
+      chapters: [
+        ["A dictionary is a circle of definitions", "Every definition in an English dictionary is written with other entries. Their definitions are made of yet more entries. Follow them long enough and you return to a word you started from."],
+        ["What a seed word is", "A seed is a word you bring in from outside the circle, known without a definition. Any entry you can read using only seeds and function words becomes known, and helps read the next one."],
+        ["This game counts reach, not understanding", "Choose 8 seeds from 30 candidates and count how much of a 127,223-entry dictionary fills in. What is counted is whether the definitions can be followed, not whether the meaning is understood."],
+      ],
+      tocTitle: "Contents",
+      tocParts: [["Desk", "Choose 8 seeds"], ["Page", "The dictionary fills in"], ["Colophon", "Result"]],
+      tocLeft: "left page",
+      doorKeys: "Enter to continue",
+      toDesk: "Go to the desk",
+      deskLead: "Pick 8 cards and place them in the slots below. Press a placed card again to return it.",
+      trayLabel: "Seed slots",
+      open: "Open",
+      deskKeys: "Arrows move, Enter places or returns, Backspace clears the last slot, Esc to the title",
+      reach: "Reached", wave: "Wave",
+      leafHead: "Your dictionary",
+      page: (n) => `Page ${n}`,
+      logTitle: "Opened entry and the definition that opened it",
+      seedTag: "seed",
+      loading: "Opening the dictionary.",
+      loadErr: "The dictionary data could not be loaded. Reload the page to try again.",
+      skip: "Skip", toColophon: "Colophon",
+      fillKeys: "Enter to skip, Esc to the title", fillKeysDone: "Enter for the colophon, Esc to the title",
+      coloTitle: "Colophon",
+      yourWords: "Your 8 seeds", yourReach: "Your reach",
+      ofTotal: (p) => `${p} of 127,223`,
+      refBest: "move, use, person, place, cause, time, language, quality",
+      refBasic: "Basic English (781 words, function words removed)",
+      refThing: "Thing Explainer (788 words, function words and inflections removed)",
+      refVal: (n, p) => `${n} (${p})`,
+      bestNote: "Remove any one word and it falls to 1,318 or fewer",
+      meaning: "Reached means the definition strings could be followed, not that the meaning was understood.",
+      credit: "Dictionary: Open English WordNet 2025 (CC BY 4.0)",
+      again: "Again", toDoor: "Title",
+    },
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const state = { lang: "ja", screen: "door", picks: [], focus: 0 };
+  const t = (k) => T[state.lang][k];
+  const fmt = (n) => n.toLocaleString("en-US");
+  const pct = (n) => (n / TOTAL * 100).toFixed(1) + "%";
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---------- 拡大: 整数倍で中央に置く。960x540 に満たないときだけ縮小する ----------
+  const stage = $("stage");
+  function fit() {
+    const W = window.innerWidth, H = window.innerHeight;
+    const r = Math.min(W / 960, H / 540);
+    const s = r >= 1 ? Math.floor(r) : r;
+    stage.style.transform = `scale(${s})`;
+    stage.style.left = Math.round((W - 960 * s) / 2) + "px";
+    stage.style.top = Math.max(0, Math.round((H - 540 * s) / 2)) + "px";
+  }
+  window.addEventListener("resize", fit);
+
+  // ---------- 辞書データ ----------
+  let G = null, DEFS = null, wsyn = null;
+  const dataReady = fetch("graph.txt").then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then((txt) => {
+      G = DictEngine.parseGraph(txt);
+      // 表示用: 語 -> その語をメンバーに持つ語義
+      const cnt = new Int32Array(G.nw + 1);
+      for (let i = 0; i < G.mem.data.length; i++) cnt[G.mem.data[i] + 1]++;
+      for (let w = 0; w < G.nw; w++) cnt[w + 1] += cnt[w];
+      const data = new Int32Array(G.mem.data.length), fillp = cnt.slice(0, G.nw);
+      for (let s = 0; s < G.ns; s++)
+        for (let i = G.mem.off[s]; i < G.mem.off[s + 1]; i++) data[fillp[G.mem.data[i]]++] = s;
+      wsyn = { off: cnt, data };
+      fetch("defs.txt").then((r) => (r.ok ? r.text() : null)).then((d) => { if (d) DEFS = d.split("\n"); }).catch(() => {});
+      return G;
+    });
+
+  // ---------- 画面切り替え ----------
+  function go(screen) {
+    state.screen = screen;
+    for (const id of ["door", "desk", "fill", "colophon"]) $(id).hidden = id !== screen;
+    if (screen !== "fill") stopFill();
+    render();
+    if (screen === "door") $("to-desk").focus();
+    if (screen === "desk") focusCard(state.focus);
+    if (screen === "colophon") $("again").focus();
+  }
+
+  function render() {
+    document.documentElement.lang = state.lang;
+    $("lang-ja").setAttribute("aria-pressed", state.lang === "ja");
+    $("lang-en").setAttribute("aria-pressed", state.lang === "en");
+    document.querySelectorAll("[data-t]").forEach((el) => { const v = t(el.dataset.t); if (typeof v === "string") el.textContent = v; });
+    renderDoor();
+    renderDesk();
+    if (state.screen === "fill") renderFillStatic();
+    if (state.screen === "colophon") renderColophon();
+  }
+
+  // ---------- 扉 ----------
+  function renderDoor() {
+    const kanji = ["一", "二", "三"];
+    $("chapters").innerHTML = t("chapters").map(([h, p], i) =>
+      `<div class="ch"><h2><span class="n">${state.lang === "ja" ? kanji[i] : i + 1}</span>${h}</h2><p>${p}</p></div>`).join("");
+    $("toc").innerHTML =
+      t("chapters").map(([h], i) => `<li><span class="n">${state.lang === "ja" ? kanji[i] : i + 1}</span><span class="ell">${h}</span><span class="d">${t("tocLeft")}</span></li>`).join("") +
+      t("tocParts").map(([n, d]) => `<li class="part"><span class="n">${n}</span><span class="ell">${d}</span></li>`).join("");
+  }
+  $("to-desk").onclick = () => go("desk");
+
+  // ---------- 机 ----------
+  function renderDesk() {
+    const full = state.picks.length >= SLOTS;
+    $("cards").innerHTML = CANDS.map((w, i) => {
+      const placed = state.picks.includes(w);
+      return `<button type="button" class="card${placed ? " placed" : ""}" data-i="${i}" tabindex="${i === state.focus ? 0 : -1}" aria-pressed="${placed}" ${!placed && full ? 'aria-disabled="true"' : ""} lang="en">${w}</button>`;
+    }).join("");
+    const slots = [];
+    for (let i = 0; i < SLOTS; i++) {
+      const w = state.picks[i];
+      slots.push(w ? `<button type="button" class="slot" data-w="${w}" lang="en">${w}</button>` : `<button type="button" class="slot" disabled aria-label="empty"></button>`);
+    }
+    slots.push(`<button type="button" class="open" id="open" ${full ? "" : "disabled"}>${t("open")}</button>`);
+    $("slots").innerHTML = slots.join("");
+    $("tray-count").textContent = `${state.picks.length}/${SLOTS}`;
+    $("open").onclick = () => openBook();
+  }
+  function focusCard(i) {
+    state.focus = Math.max(0, Math.min(CANDS.length - 1, i));
+    const cards = $("cards").querySelectorAll(".card");
+    cards.forEach((c, j) => c.tabIndex = j === state.focus ? 0 : -1);
+    cards[state.focus]?.focus();
+  }
+  function toggle(w) {
+    const i = state.picks.indexOf(w);
+    if (i >= 0) state.picks.splice(i, 1);
+    else if (state.picks.length < SLOTS) state.picks.push(w);
+    else return;
+    renderDesk();
+    if (state.picks.length === SLOTS) $("open").focus();
+    else focusCard(state.focus);
+  }
+  $("cards").addEventListener("click", (e) => {
+    const b = e.target.closest(".card"); if (!b) return;
+    state.focus = +b.dataset.i;
+    toggle(CANDS[state.focus]);
+  });
+  $("cards").addEventListener("keydown", (e) => {
+    const d = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -6, ArrowDown: 6 }[e.key];
+    if (d === undefined) return;
+    e.preventDefault();
+    const n = state.focus + d;
+    if (n >= 0 && n < CANDS.length) focusCard(n);
+  });
+  $("slots").addEventListener("click", (e) => {
+    const b = e.target.closest(".slot"); if (!b || !b.dataset.w) return;
+    state.focus = CANDS.indexOf(b.dataset.w);
+    toggle(b.dataset.w);
+  });
+
+  // ---------- 頁: 埋める ----------
+  let run = null; // 実行中の演出
+  function openBook() {
+    if (state.picks.length < SLOTS) return;
+    go("fill");
+    $("log").innerHTML = "";
+    $("leaf-body").innerHTML = `<span class="status">${esc(t("loading"))}</span>`;
+    setHud(0, 0, -1);
+    $("fill-btn").disabled = true;
+    dataReady.then(() => { if (state.screen === "fill") startFill(); })
+      .catch(() => { $("leaf-body").innerHTML = `<span class="status">${esc(t("loadErr"))}</span>`; });
+  }
+
+  function startFill() {
+    const ids = state.picks.map((w) => G.index.get(w));
+    const res = DictEngine.closure(G, ids);
+    // 波の区切り: 先頭 i 語で閉じたときの到達数（engine の戻り値そのまま）
+    const bounds = [res.base];
+    for (let i = 1; i <= SLOTS; i++) bounds.push(i === SLOTS ? res.count : DictEngine.closure(G, ids.slice(0, i)).count);
+    const pos = new Int32Array(G.nw).fill(-1);
+    res.order.forEach((w, i) => { pos[w] = i; });
+    const seedAt = new Set();
+    for (let i = 0; i < SLOTS; i++) if (pos[ids[i]] === bounds[i]) seedAt.add(ids[i]);
+    run = { res, bounds, pos, seedAt, wave: 0, idx: 0, t0: 0, page: 1, raf: 0, lastLog: 0, done: false };
+    $("leaf-body").innerHTML = "";
+    $("leaf-page").textContent = t("page")(1);
+    $("fill-btn").disabled = false;
+    renderFillStatic();
+    $("fill-btn").focus();
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || document.hidden) finishFill();
+    else run.raf = requestAnimationFrame(tick);
+  }
+
+  const waveDur = (n) => Math.min(4200, Math.max(650, 500 + n * 0.04));
+  function tick(now) {
+    if (!run || run.done) return;
+    const { bounds, res } = run;
+    if (!run.t0) run.t0 = now;
+    // 波0は機能語だけで読める語、波1..8は種語ごとの連鎖
+    const a = run.wave === 0 ? 0 : bounds[run.wave - 1], b = bounds[run.wave];
+    const n = b - a, dur = waveDur(n);
+    const x = Math.min(1, (now - run.t0) / dur);
+    const target = a + Math.round(n * (1 - Math.pow(1 - x, 2)));
+    if (target > run.idx) {
+      // 表示だけ間引く: 1コマに最大4語を頁に置く
+      const step = Math.max(1, Math.ceil((target - run.idx) / 4));
+      for (let i = run.idx; i < target; i += step) putWord(res.order[i]);
+      if (now - run.lastLog > 140) { addLog(res.order[target - 1]); run.lastLog = now; }
+      run.idx = target;
+    }
+    setHud(run.idx, run.wave, run.wave);
+    if (x >= 1) {
+      if (run.wave === SLOTS) return finishFill();
+      run.wave++; run.t0 = now;
+      if (bounds[run.wave] > bounds[run.wave - 1]) {
+        // 波の先頭（ふつうは種語）は必ず頁に置く
+        putWord(res.order[run.idx]); addLog(res.order[run.idx]); run.idx++;
+      }
+    }
+    run.raf = requestAnimationFrame(tick);
+  }
+  function finishFill() {
+    if (!run) return;
+    cancelAnimationFrame(run.raf);
+    run.done = true;
+    run.idx = run.res.count;
+    setHud(run.res.count, SLOTS, -1);
+    if (!$("log").children.length) addLog(run.res.order[run.res.count - 1]);
+    renderFillStatic();
+    $("fill-btn").focus();
+  }
+  function stopFill() { if (run) { cancelAnimationFrame(run.raf); run = null; } }
+  document.addEventListener("visibilitychange", () => { if (document.hidden && run && !run.done) finishFill(); });
+
+  function putWord(w) {
+    const body = $("leaf-body");
+    const span = document.createElement("span");
+    span.textContent = G.words[w];
+    span.lang = "en";
+    if (run.seedAt.has(w)) span.className = "seed";
+    body.appendChild(span);
+    body.appendChild(document.createTextNode(" "));
+    if (body.scrollHeight > body.clientHeight) {
+      // 頁が埋まったらめくる
+      run.page++;
+      $("leaf-page").textContent = t("page")(run.page);
+      body.textContent = "";
+      body.appendChild(span);
+      body.appendChild(document.createTextNode(" "));
+    }
+  }
+  function openedBy(w) {
+    if (run.seedAt.has(w)) return -2;
+    const p = run.pos[w];
+    for (let i = wsyn.off[w]; i < wsyn.off[w + 1]; i++) {
+      const s = wsyn.data[i];
+      let ok = true;
+      for (let j = G.req.off[s]; j < G.req.off[s + 1]; j++) {
+        const r = G.req.data[j];
+        if (run.pos[r] < 0 || run.pos[r] >= p) { ok = false; break; }
+      }
+      if (ok) return s;
+    }
+    return -1;
+  }
+  function addLog(w) {
+    const s = openedBy(w);
+    let def;
+    if (s === -2) def = `<span class="tag">${esc(t("seedTag"))}</span>`;
+    else if (s >= 0) {
+      const txt = DEFS ? DEFS[s] : Array.from(G.req.data.subarray(G.req.off[s], G.req.off[s + 1]), (r) => G.words[r]).join(", ");
+      def = `<span class="def">${esc(txt)}</span>`;
+    } else def = "";
+    const li = document.createElement("li");
+    li.className = "ell";
+    li.lang = "en";
+    li.innerHTML = `<span class="hw${s === -2 ? " seed" : ""}">${esc(G.words[w])}</span> ← ${def}`;
+    const log = $("log");
+    log.prepend(li);
+    while (log.children.length > 14) log.lastChild.remove();
+  }
+  function setHud(count, wave, now) {
+    $("hud-count").textContent = fmt(count);
+    $("hud-pct").textContent = pct(count);
+    $("hud-wave").textContent = `${wave}/${SLOTS}`;
+    $("hud-picks").innerHTML = state.picks.map((w, i) =>
+      `<span lang="en" class="${i + 1 === now ? "now" : i + 1 <= wave ? "done" : ""}">${w}</span>`).join("");
+  }
+  function renderFillStatic() {
+    const done = !run || run.done;
+    $("fill-btn").textContent = done && run ? t("toColophon") : t("skip");
+    $("fill-keys").textContent = done && run ? t("fillKeysDone") : t("fillKeys");
+    if (run) $("leaf-page").textContent = t("page")(run.page);
+    if (run && run.done) setHud(run.res.count, SLOTS, -1);
+  }
+  $("fill-btn").onclick = () => {
+    if (!run) return;
+    if (!run.done) finishFill();
+    else { state.result = run.res.count; go("colophon"); }
+  };
+
+  // ---------- 奥付 ----------
+  function renderColophon() {
+    const n = state.result ?? 0;
+    const same = BEST.every((w) => state.picks.includes(w));
+    $("colo-picks").innerHTML = state.picks.map((w) => `<span lang="en">${w}</span>`).join("");
+    $("colo-num").textContent = fmt(n);
+    $("colo-pct").textContent = t("ofTotal")(pct(n));
+    const x = (v) => (v / TOTAL * 100).toFixed(2) + "%";
+    $("colo-scale").innerHTML = REFS.map((r) => `<i style="left:${x(r.n)}"></i>`).join("") +
+      `<i class="me" style="left:${x(n)}"></i><span class="t0">0</span><span class="t1">127,223</span>`;
+    $("refs").innerHTML = REFS.map((r) =>
+      `<li class="${r.best && same ? "match" : ""}"><i></i><span class="name"${r.best ? ' lang="en"' : ""}>${esc(t(r.key))}</span><span class="val">${t("refVal")(fmt(r.n), pct(r.n))}</span>` +
+      (r.best ? `<span class="note">${esc(t("bestNote"))}</span>` : "") + `</li>`).join("");
+  }
+  $("again").onclick = () => go("desk");
+  $("to-door").onclick = () => go("door");
+
+  // ---------- キー操作 ----------
+  document.addEventListener("keydown", (e) => {
+    const onButton = e.target && e.target.tagName === "BUTTON";
+    if (e.key === "Escape") { e.preventDefault(); go("door"); return; }
+    if (state.screen === "door" && e.key === "Enter" && !onButton) { e.preventDefault(); go("desk"); return; }
+    if (state.screen === "desk" && e.key === "Backspace") {
+      e.preventDefault();
+      if (state.picks.length) { state.picks.pop(); renderDesk(); focusCard(state.focus); }
+      return;
+    }
+    if (state.screen === "desk" && e.key === "Enter" && !onButton && state.picks.length === SLOTS) { e.preventDefault(); openBook(); return; }
+    if (state.screen === "fill" && e.key === "Enter" && !onButton) { e.preventDefault(); $("fill-btn").click(); }
+  });
+
+  // ---------- 言語 ----------
+  function loadLang() {
+    try { const v = localStorage.getItem("wow-lang"); if (v === "ja" || v === "en") return v; } catch (e) {}
+    return (navigator.language || "").startsWith("ja") ? "ja" : "en";
+  }
+  function setLang(l) {
+    state.lang = l;
+    try { localStorage.setItem("wow-lang", l); } catch (e) {}
+    render();
+  }
+  $("lang-ja").onclick = () => setLang("ja");
+  $("lang-en").onclick = () => setLang("en");
+
+  function start(data) {
+    state.lang = data.lang || loadLang();
+    if (Array.isArray(data.picks)) state.picks = data.picks.filter((w) => CANDS.includes(w)).slice(0, SLOTS);
+    fit();
+    go(data.screen === "desk" ? "desk" : "door");
+  }
+  window.claude?.hot?.snapshot?.(() => ({ lang: state.lang, picks: state.picks, screen: state.screen }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>

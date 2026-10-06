@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>card</title>
+<style>
+/* 1200x630 のカード画像。tools/render_card.sh で game/card.png に書き出す。頁の語は water, time, light, word を種にしたとき実際に開く語 */
+:root { --parch: #e4d3b0; --ink: #1c140e; --shu: #8e2f2f; --gold: #a7843f; --known: #2f6f62; --gray: #8a7d6b;
+  --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Hiragino Mincho ProN", "Yu Mincho", serif; }
+html, body { margin: 0; width: 1200px; height: 630px; background: var(--ink); overflow: hidden; }
+.card { position: absolute; inset: 0; background: var(--parch); color: var(--ink); font-family: var(--font); }
+.frame { position: absolute; left: 44px; top: 44px; right: 44px; bottom: 44px; border: 8px double var(--ink); display: grid; grid-template-columns: 1fr 1fr; }
+.left { padding: 56px 0 0 60px; border-right: 2px solid var(--ink); position: relative; }
+.title { font-size: 76px; line-height: 1.05; color: var(--shu); font-weight: 600; letter-spacing: 0.01em; }
+.sub { font-size: 34px; margin-top: 22px; }
+.q { position: absolute; left: 60px; right: 40px; bottom: 50px; font-size: 26px; line-height: 1.55; }
+.q b { color: var(--known); }
+.right { padding: 48px 50px 0; }
+.slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.slots span { border: 6px double var(--ink); height: 54px; display: flex; align-items: center; justify-content: center; font-size: 25px; }
+.slots span.empty { border: 3px dashed var(--gray); }
+.page { margin-top: 28px; font-size: 21px; line-height: 1.75; word-spacing: 0.25em; color: var(--known); height: 228px; overflow: hidden; border-top: 2px solid var(--ink); padding-top: 12px; }
+.page .s { color: var(--shu); font-weight: 600; }
+.page .n { color: var(--gray); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="frame">
+    <div class="left">
+      <div class="title">Words<br>of Words</div>
+      <div class="sub">ことばで、ことばを。</div>
+      <div class="q">8つの種語で、<br><b>127,223語</b>の英英辞書は<br>どこまで言葉だけで書けるか。</div>
+    </div>
+    <div class="right">
+      <div class="slots"><span>water</span><span>time</span><span>light</span><span>word</span><span class="empty"></span><span class="empty"></span><span class="empty"></span><span class="empty"></span></div>
+      <div class="page"><span class="s">water</span> <span class="s">time</span> moment momentarily momently seasonableness timeliness presocratic around-the-clock <span class="s">light</span> backlighting darkly <span class="s">word</span> non-verbally nonverbally</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
