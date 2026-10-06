@@ -13,198 +13,274 @@
 <meta property="og:image" content="https://konaito.github.io/words-of-words/card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Words of Words。ことばで、ことばを。">
+<meta property="og:image:alt" content="Words of Words。英英辞書は、何語から書ける？">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Words of Words">
 <meta name="twitter:description" content="8つの英単語を種にして、127,223語の英英辞書を言葉だけでどこまで書けるかを試すゲーム。">
 <meta name="twitter:image" content="https://konaito.github.io/words-of-words/card.png">
 <style>
-/* 960x540 の一枚の書物。扉・机・頁・奥付の4面を同じ枠で切り替える。羊皮紙に墨、朱は印、金は点、青緑は既知 */
+/* 960x540 の固定ステージ。扉・選ぶ・広がる・結果の4面を切り替える。白に近い地に、種語ごとのパステル8色 */
 :root {
-  --parch: #e4d3b0;
-  --ink: #1c140e;
-  --shu: #8e2f2f;
-  --gold: #a7843f;
-  --known: #2f6f62;
-  --gray: #8a7d6b;
-  --font: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", serif;
+  --bg: #f7f5f1;
+  --panel: #ffffff;
+  --line: #e6e1d8;
+  --ink: #1f2937;
+  --sub: #6b7280;
+  --mute: #a3a3a3;
+  --blue: #4a86e0;
+  --blue-soft: #e7effb;
+  --green: #1f7a5c;
+  --off: #c9c3b8;
+  --font: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --round: ui-rounded, "Arial Rounded MT Bold", "Hiragino Maru Gothic ProN", system-ui, sans-serif;
+  --hand: "Bradley Hand", "Segoe Print", "Comic Sans MS", cursive;
   color-scheme: light;
 }
-html, body { margin: 0; height: 100%; background: var(--ink); color: var(--ink); overflow: hidden; }
-#viewport { position: fixed; inset: 0; overflow: hidden; background: var(--ink); }
-#stage { position: absolute; left: 0; top: 0; width: 960px; height: 540px; transform-origin: 0 0; background: var(--parch); font-family: var(--font); font-size: 15px; line-height: 1.6; overflow: hidden; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden; }
+#viewport { position: fixed; inset: 0; overflow: hidden; background: var(--bg); }
+#stage { position: absolute; left: 0; top: 0; width: 960px; height: 540px; transform-origin: 0 0; background: var(--bg); font-family: var(--font); font-size: 14px; line-height: 1.6; overflow: hidden; }
 .screen { position: absolute; inset: 0; }
-.frame { position: absolute; border: 4px double var(--ink); box-sizing: border-box; }
-button { font: inherit; color: var(--ink); background: var(--parch); border: 3px double var(--ink); border-radius: 2px; padding: 3px 16px; cursor: pointer; }
-button:active:not(:disabled) { transform: translateY(1px); }
-button:disabled { color: var(--gray); border-color: var(--gray); cursor: default; }
-button:focus-visible { outline: 2px solid var(--shu); outline-offset: 2px; }
-.btn-main { font-size: 17px; padding: 4px 22px; }
-.keys { font-size: 12px; color: var(--gray); }
-.brand { position: absolute; left: 24px; top: 9px; font-size: 15px; letter-spacing: 0.04em; }
-.brand b { color: var(--shu); font-weight: 600; }
-.lang { position: absolute; top: 8px; right: 24px; display: flex; gap: 4px; z-index: 5; }
-.lang button { font-size: 12px; padding: 0 8px; line-height: 20px; }
-.lang button[aria-pressed="true"] { background: var(--ink); color: var(--parch); }
-.ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[hidden] { display: none !important; }
+button { font: inherit; color: var(--ink); cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 0 20px; height: 42px; box-shadow: 0 1px 2px rgba(31, 41, 55, 0.06); }
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 700; box-shadow: 0 6px 14px rgba(74, 134, 224, 0.28); }
+.btn.primary:disabled { background: #b9c6d8; border-color: #b9c6d8; box-shadow: none; cursor: default; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.lang { display: flex; background: #efebe4; border-radius: 10px; padding: 3px; gap: 2px; }
+.lang button { border: 0; background: transparent; border-radius: 8px; font-size: 12px; padding: 0 10px; height: 24px; color: var(--sub); }
+.lang button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(31, 41, 55, 0.1); }
+.gloss { color: var(--sub); font-size: 0.78em; font-weight: 400; }
+.mascot { position: absolute; width: 64px; height: 76px; }
+
+/* 共通ヘッダー */
+.top { position: absolute; left: 0; right: 0; top: 0; height: 60px; display: flex; align-items: center; padding: 0 28px; gap: 14px; }
+.top .back { border: 0; background: transparent; width: 32px; height: 32px; border-radius: 8px; font-size: 20px; line-height: 1; color: var(--ink); }
+.top .back:hover { background: #ece8e1; }
+.top .brand { border: 0; background: transparent; font-size: 15px; color: var(--sub); padding: 0; }
+.steps { position: absolute; left: 50%; transform: translateX(-50%); display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; }
+.steps li { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--sub); white-space: nowrap; }
+.steps li .n { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--off); display: grid; place-items: center; font-size: 13px; font-family: var(--round); }
+.steps li.on { color: var(--blue); font-weight: 700; }
+.steps li.on .n { background: var(--blue); border-color: var(--blue); color: #fff; }
+.top .lang { margin-left: auto; }
 
 /* 扉 */
-#door .frame { left: 24px; top: 40px; width: 912px; height: 476px; display: grid; grid-template-columns: 1fr 1fr; }
-.pg { position: relative; padding: 20px 30px; box-sizing: border-box; }
-.pg.left { border-right: 1px solid var(--ink); }
-.ch + .ch { margin-top: 18px; }
-.ch h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; line-height: 1.4; }
-.ch h2 .n { color: var(--shu); margin-right: 8px; }
-.ch p { margin: 0; font-size: 14px; line-height: 1.7; max-height: calc(14px * 1.7 * 4); overflow: hidden; }
-.toc h2 { margin: 0 0 12px; font-size: 18px; font-weight: 600; letter-spacing: 0.3em; }
-.toc ol { list-style: none; margin: 0; padding: 0; }
-.toc li { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px dotted var(--gray); font-size: 14px; }
-.toc li .n { width: 2.2em; color: var(--shu); flex: none; }
-.toc li .d { color: var(--gray); margin-left: auto; white-space: nowrap; }
-.toc li.part .n { color: var(--gold); }
-html[lang="en"] .toc li .n { width: 5em; }
-.toc .go { position: absolute; left: 30px; right: 30px; bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#door .corner { position: absolute; top: 18px; right: 30px; font-size: 12px; color: var(--sub); }
+#door .copy { position: absolute; left: 64px; top: 64px; width: 380px; }
+#door h1 { margin: 0; font-family: var(--round); font-size: 48px; line-height: 1.1; letter-spacing: 0.005em; }
+#door h2 { margin: 22px 0 0; font-size: 23px; line-height: 1.5; font-weight: 700; }
+#door p { margin: 14px 0 0; font-size: 13.5px; line-height: 1.9; color: var(--sub); }
+#door .acts { display: flex; flex-direction: column; gap: 12px; width: 236px; margin-top: 24px; }
+#door .acts .btn { height: 46px; font-size: 15px; display: flex; align-items: center; justify-content: center; position: relative; }
+#door .acts .primary::after { content: "›"; position: absolute; right: 18px; font-size: 20px; font-weight: 400; }
+#door .lang { position: absolute; left: 64px; bottom: 30px; }
+.deck { position: absolute; left: 500px; top: 70px; width: 380px; height: 300px; }
+.deck .c { position: absolute; width: 230px; height: 170px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 10px 24px rgba(31, 41, 55, 0.08); font-family: var(--round); color: #c9ced8; font-size: 22px; line-height: 34px; display: flex; align-items: flex-start; justify-content: flex-end; padding: 0 18px; box-sizing: border-box; }
+.deck .c1 { left: 150px; top: 0; transform: rotate(6deg); }
+.deck .c2 { left: 128px; top: 34px; transform: rotate(4deg); }
+.deck .c3 { left: 108px; top: 70px; transform: rotate(2deg); }
+.deck .front { left: 0; top: 80px; width: 214px; height: 186px; transform: rotate(-4deg); color: var(--ink); flex-direction: column; align-items: center; justify-content: center; line-height: 1.3; padding: 0 18px; text-align: center; box-shadow: 0 16px 30px rgba(31, 41, 55, 0.12); }
+.deck .front b { font-size: 34px; }
+.deck .front span { font-family: var(--font); font-size: 12.5px; line-height: 1.6; color: var(--sub); margin-top: 10px; }
+#door .mascot { left: 560px; top: 356px; }
+#door .tag { position: absolute; right: 52px; bottom: 44px; font-family: var(--hand); font-size: 16px; line-height: 1.5; color: var(--sub); transform: rotate(-6deg); text-align: right; }
 
-/* 机 */
-#desk .frame { left: 24px; top: 40px; width: 912px; height: 476px; padding: 14px 20px; }
-.lead { margin: 0 0 10px; font-size: 14px; height: 24px; }
-.cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-.card { height: 40px; font-size: 16px; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card[aria-disabled="true"] { color: var(--gray); border-color: var(--gray); cursor: default; }
-.card.placed { border-style: dashed; border-width: 2px; border-color: var(--gray); color: var(--gray); }
-.tray { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ink); }
-.tray .label { font-size: 13px; margin-bottom: 6px; display: flex; justify-content: space-between; }
-.tray .label b { color: var(--shu); font-weight: 600; font-variant-numeric: tabular-nums; }
-.slots { display: grid; grid-template-columns: repeat(8, 1fr) 120px; gap: 6px; align-items: stretch; }
-.slot { height: 44px; font-size: 15px; padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.slot:disabled { border: 2px dashed var(--gray); background: transparent; }
-.slots .open { font-size: 17px; }
-.slots .open:not(:disabled) { border-color: var(--shu); color: var(--shu); }
-#desk .keys { position: absolute; left: 20px; bottom: 10px; }
+/* 遊び方 */
+#howto { position: absolute; inset: 0; background: rgba(31, 41, 55, 0.25); display: grid; place-items: center; z-index: 10; }
+#howto[hidden] { display: none; }
+#howto .box { width: 620px; background: var(--panel); border-radius: 18px; padding: 26px 30px 22px; box-shadow: 0 20px 40px rgba(31, 41, 55, 0.18); }
+#howto h3 { margin: 0 0 12px; font-size: 18px; }
+#howto ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+#howto li { display: grid; grid-template-columns: 28px 1fr; gap: 4px 10px; }
+#howto li .n { grid-row: span 2; width: 26px; height: 26px; border-radius: 50%; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; font-family: var(--round); font-size: 13px; }
+#howto li b { font-size: 14.5px; }
+#howto li p { margin: 0; font-size: 13px; line-height: 1.75; color: var(--sub); }
+#howto .end { display: flex; justify-content: flex-end; margin-top: 16px; }
 
-/* 頁 */
-.hud { left: 24px; top: 36px; width: 912px; height: 56px; display: flex; align-items: center; gap: 14px; padding: 0 12px; }
-.hud .picks { display: flex; gap: 4px; flex: 1; min-width: 0; overflow: hidden; }
-.hud .picks span { font-size: 13px; padding: 0 5px; border: 1px solid var(--gray); color: var(--gray); white-space: nowrap; }
-.hud .picks span.done { color: var(--ink); border-color: var(--ink); }
-.hud .picks span.now { color: var(--shu); border-color: var(--shu); }
-.hud .stat { display: flex; align-items: baseline; gap: 6px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.hud .stat .k { font-size: 12px; color: var(--gray); }
-.hud .stat .v { font-size: 22px; color: var(--known); font-weight: 600; min-width: 84px; text-align: right; }
-.hud .stat .p { font-size: 15px; min-width: 52px; text-align: right; }
-.hud .stat .w { font-size: 17px; min-width: 34px; }
-.leaf { left: 24px; top: 100px; width: 600px; height: 400px; padding: 10px 18px; }
-.leaf .head { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray); border-bottom: 1px solid var(--ink); padding-bottom: 4px; margin-bottom: 8px; }
-.leaf .body { height: 338px; overflow: hidden; font-size: 14px; line-height: 1.75; word-spacing: 0.3em; }
-.leaf .body span { color: var(--known); animation: lit 700ms ease-out; }
-.leaf .body span.seed { color: var(--shu); font-weight: 600; }
-.leaf .body .status { color: var(--gray); animation: none; }
-@keyframes lit { 0% { color: var(--parch); background: var(--shu); } 35% { color: var(--parch); background: var(--gold); } 100% { background: transparent; } }
-.log { left: 636px; top: 100px; width: 300px; height: 400px; padding: 10px 12px; }
-.log h3 { margin: 0 0 6px; font-size: 12px; font-weight: 400; color: var(--gray); border-bottom: 1px solid var(--ink); padding-bottom: 4px; }
-.log ol { list-style: none; margin: 0; padding: 0; }
-.log li { padding: 3px 0; border-bottom: 1px dotted var(--gray); font-size: 13px; line-height: 1.45; }
-.log li .hw { color: var(--known); font-weight: 600; }
-.log li .hw.seed { color: var(--shu); }
-.log li .def { color: var(--ink); }
-.log li .tag { color: var(--gray); }
-.fillbar { position: absolute; left: 24px; right: 24px; top: 506px; display: flex; align-items: center; justify-content: space-between; }
-.fillbar button { padding: 0 16px; line-height: 22px; }
+/* 選ぶ */
+#desk h1 { position: absolute; left: 48px; top: 74px; margin: 0; font-size: 23px; }
+#desk .lead { position: absolute; left: 48px; top: 112px; margin: 0; font-size: 13px; color: var(--sub); }
+.search { position: absolute; left: 48px; top: 146px; width: 552px; height: 40px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.search svg { flex: none; }
+.search input { border: 0; outline: 0; font: inherit; font-size: 14px; flex: 1; background: transparent; color: var(--ink); }
+.search input::placeholder { color: var(--mute); }
+.cards { position: absolute; left: 48px; top: 200px; width: 552px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.card { height: 50px; border: 1px solid transparent; background: #efebe4; border-radius: 12px; padding: 0 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; overflow: hidden; }
+.card .w { font-size: 14.5px; max-width: 100%; overflow: hidden; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.card.long .w { font-size: 12px; }
+.card .gloss { font-size: 10.5px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card:hover:not([aria-disabled="true"]) { background: #e8e3da; }
+.card[aria-pressed="true"] { background: var(--blue-soft); border-color: var(--blue); color: var(--blue); font-weight: 700; }
+.card[aria-pressed="true"] .gloss { color: var(--blue); }
+.card[aria-disabled="true"] { opacity: 0.45; cursor: default; }
+.empty-msg { grid-column: 1 / -1; font-size: 13px; color: var(--sub); padding: 12px 2px; }
+.count { position: absolute; right: 52px; top: 84px; font-family: var(--round); font-size: 15px; }
+.count b { font-size: 20px; }
+.picked { position: absolute; left: 652px; top: 120px; width: 260px; height: 268px; box-sizing: border-box; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.picked .h { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.picked .h span { font-weight: 400; color: var(--sub); }
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.slot { height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); padding: 0 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; overflow: hidden; }
+.slot .w { font-size: 14px; font-weight: 700; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.slot .gloss { font-size: 10.5px; }
+.slot.empty { color: var(--off); font-size: 22px; font-weight: 300; border-style: dashed; }
+.startbtn { position: absolute; left: 652px; top: 404px; width: 260px; height: 50px; font-size: 15px; }
 
-/* 奥付 */
-#colophon .frame { left: 24px; top: 40px; width: 912px; height: 476px; padding: 18px 26px; display: grid; grid-template-columns: 360px 1fr; grid-template-rows: auto 1fr auto; gap: 0 32px; }
-.colo-title { grid-column: 1 / -1; font-size: 18px; font-weight: 600; letter-spacing: 0.3em; margin: 0 0 12px; border-bottom: 1px solid var(--ink); padding-bottom: 6px; }
-.you .label { font-size: 13px; color: var(--gray); }
-.you .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 14px; }
-.you .chips span { font-size: 13px; padding: 0 5px; border: 1px solid var(--ink); }
-.you .num { font-size: 46px; line-height: 1.1; color: var(--known); font-weight: 600; font-variant-numeric: tabular-nums; }
-.you .pct { font-size: 15px; font-variant-numeric: tabular-nums; }
-.scale { position: relative; height: 34px; margin-top: 16px; border-bottom: 2px solid var(--ink); }
-.scale i { position: absolute; bottom: -5px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--gold); }
-.scale i.me { width: 0; height: 0; border-radius: 0; background: none; margin-left: -6px; bottom: 2px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid var(--shu); }
-.scale .t0, .scale .t1 { position: absolute; bottom: -22px; font-size: 11px; color: var(--gray); font-variant-numeric: tabular-nums; }
-.scale .t0 { left: 0; } .scale .t1 { right: 0; }
-.refs { list-style: none; margin: 0; padding: 0; }
-.refs li { display: grid; grid-template-columns: 14px minmax(0, 1fr) auto; gap: 4px 10px; align-items: baseline; padding: 8px 10px; border: 2px solid transparent; }
-.refs li + li { border-top: 1px dotted var(--gray); }
-.refs li.match { border: 2px solid var(--shu); }
-.refs li i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
-.refs li .name { font-size: 14px; line-height: 1.45; }
-.refs li .val { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.refs li .note { grid-column: 2 / -1; font-size: 12px; color: var(--gray); }
-.colo-foot { grid-column: 1 / -1; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; border-top: 1px solid var(--ink); padding-top: 10px; }
-.colo-foot p { margin: 0; font-size: 13px; }
-.colo-foot .credit { font-size: 11px; color: var(--gray); margin-top: 2px; }
-.colo-foot .btns { display: flex; gap: 8px; flex: none; }
-@media (prefers-reduced-motion: reduce) { .leaf .body span { animation: none; } }
+/* 広がる */
+#fill h1 { position: absolute; left: 44px; top: 74px; margin: 0; font-size: 22px; }
+#fill .lead { position: absolute; left: 44px; top: 110px; margin: 0; font-size: 12.5px; color: var(--sub); white-space: nowrap; }
+.legend { position: absolute; left: 36px; top: 150px; width: 184px; list-style: none; margin: 0; padding: 0; }
+.legend li { display: flex; align-items: center; gap: 8px; height: 31px; padding: 0 10px; border-radius: 9px; font-size: 14px; color: var(--sub); }
+.legend li .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; opacity: 0.4; }
+.legend li .w { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.legend li .plus { margin-left: auto; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--mute); white-space: nowrap; }
+.legend li.done { color: var(--ink); }
+.legend li.done .dot, .legend li.now .dot { opacity: 1; }
+.legend li.now { background: #ece8e1; color: var(--ink); font-weight: 700; }
+.field { position: absolute; left: 236px; top: 138px; width: 696px; height: 330px; }
+.field canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.node { position: absolute; transform: translate(-7px, -50%); display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; white-space: nowrap; background: rgba(255, 255, 255, 0.85); border-radius: 8px; padding: 1px 7px 1px 3px; opacity: 0; transition: opacity 300ms; pointer-events: none; }
+.node i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; }
+.node.on { opacity: 1; }
+#fill .mascot { left: 34px; top: 444px; }
+.bubble { position: absolute; left: 104px; top: 448px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 6px 14px; font-size: 12.5px; white-space: nowrap; }
+.ticker { position: absolute; left: 252px; top: 482px; width: 400px; font-size: 11.5px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ticker b { color: var(--ink); }
+.status { position: absolute; right: 28px; top: 474px; display: flex; align-items: center; gap: 10px; }
+.status .pill { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; height: 40px; padding: 0 14px; display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--sub); white-space: nowrap; }
+.status .pill b { color: var(--ink); font-family: var(--round); font-size: 15px; font-variant-numeric: tabular-nums; }
+.status .btn { height: 40px; font-size: 13px; }
+
+/* 結果 */
+#result h1 { position: absolute; left: 44px; top: 70px; margin: 0; font-size: 25px; white-space: nowrap; }
+#result h1 .num { font-family: var(--round); font-size: 34px; color: var(--green); margin-right: 2px; }
+#result .lead { position: absolute; left: 44px; top: 120px; margin: 0; font-size: 13px; color: var(--sub); }
+.chips { position: absolute; left: 44px; top: 156px; width: 600px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.chips span { height: 44px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; font-size: 16px; font-weight: 700; overflow: hidden; }
+.chips span .gloss { font-size: 10.5px; color: inherit; opacity: 0.8; }
+.refs { position: absolute; left: 44px; top: 264px; width: 600px; box-sizing: border-box; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 14px 6px; }
+.refs h3 { margin: 0 0 2px; font-size: 12.5px; }
+.refs ol { list-style: none; margin: 0; padding: 0; }
+.refs li { display: flex; align-items: baseline; gap: 10px; padding: 5px 6px; border-top: 1px solid #f0ece5; font-size: 11.5px; border-radius: 6px; }
+.refs li .name { min-width: 0; flex: 1; }
+.refs li .name small { display: block; color: var(--sub); font-size: 10.5px; }
+.refs li .val { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.refs li .val span { color: var(--sub); margin-left: 4px; }
+.refs li.match { background: var(--blue-soft); }
+.donut { position: absolute; left: 690px; top: 72px; width: 210px; height: 210px; }
+.donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.donut .in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; line-height: 1.3; }
+.donut .in b { font-family: var(--round); font-size: 34px; }
+.donut .in span { font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.donut .in small { font-size: 11px; color: var(--sub); }
+.rbtns { position: absolute; left: 676px; top: 306px; width: 240px; display: flex; gap: 10px; }
+.rbtns .btn { flex: 1; padding: 0 8px; font-size: 13px; height: 44px; }
+.toast { position: absolute; left: 676px; top: 356px; width: 240px; text-align: center; font-size: 12px; color: var(--green); }
+.meaning { position: absolute; left: 44px; top: 474px; width: 600px; margin: 0; font-size: 12px; line-height: 1.6; }
+.credit { position: absolute; left: 44px; top: 500px; font-size: 10.5px; color: var(--sub); }
+#result .mascot { left: 852px; top: 444px; }
+@media (prefers-reduced-motion: reduce) { .node { transition: none; } }
 </style>
 </head>
 <body>
 <div id="viewport">
   <div id="stage">
-    <div class="brand"><b>Words of Words</b> <span data-t="brand"></span></div>
-    <div class="lang" role="group" aria-label="Language">
-      <button id="lang-ja" type="button" aria-pressed="true">日本語</button>
-      <button id="lang-en" type="button" aria-pressed="false">English</button>
-    </div>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="mascot" viewBox="0 0 64 76">
+        <path d="M9 7l4 6M18 3l1 7M27 6l-3 6" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M14 70C9 50 10 22 31 18c18-3 24 16 23 34-1 9 3 15-1 17-4 2-6-3-10-1s-6 5-10 2-7 2-19 0z" fill="#fff" stroke="#2b2b2b" stroke-width="2.2" stroke-linejoin="round"/>
+        <circle cx="31" cy="36" r="2.4" fill="#2b2b2b"/><circle cx="41" cy="35" r="2.4" fill="#2b2b2b"/>
+        <path d="M34 42q2.5 2 5 0" stroke="#2b2b2b" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M51 46c5-1 7 3 5 6" stroke="#2b2b2b" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </symbol>
+    </svg>
 
     <section class="screen" id="door">
-      <div class="frame">
-        <div class="pg left" id="chapters"></div>
-        <div class="pg toc">
-          <h2 data-t="tocTitle"></h2>
-          <ol id="toc"></ol>
-          <div class="go"><span class="keys" data-t="doorKeys"></span><button class="btn-main" id="to-desk" type="button" data-t="toDesk"></button></div>
+      <div class="corner">Words of Words</div>
+      <div class="copy">
+        <h1>Words of Words</h1>
+        <h2 id="door-head"></h2>
+        <p id="door-body"></p>
+        <div class="acts">
+          <button class="btn primary" id="to-desk" type="button" data-t="start"></button>
+          <button class="btn" id="howto-open" type="button" data-t="howto"></button>
+        </div>
+      </div>
+      <div class="deck" aria-hidden="true">
+        <div class="c c1">connect</div><div class="c c2">dominate</div><div class="c c3">understand</div>
+        <div class="c front"><b>word</b><span>a unit of language that native speakers can identify</span></div>
+      </div>
+      <svg class="mascot" aria-hidden="true"><use href="#mascot"/></svg>
+      <div class="tag" id="door-tag"></div>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="ja">日本語</button><button type="button" data-lang="en">English</button>
+      </div>
+      <div id="howto" hidden role="dialog" aria-modal="true" aria-labelledby="howto-title">
+        <div class="box">
+          <h3 id="howto-title" data-t="howto"></h3>
+          <ol id="chapters"></ol>
+          <div class="end"><button class="btn" id="howto-close" type="button" data-t="close"></button></div>
         </div>
       </div>
     </section>
 
-    <section class="screen" id="desk" hidden>
-      <div class="frame">
-        <p class="lead" data-t="deskLead"></p>
-        <div class="cards" id="cards" role="group"></div>
-        <div class="tray">
-          <div class="label"><span data-t="trayLabel"></span><b id="tray-count"></b></div>
-          <div class="slots" id="slots"></div>
-        </div>
-        <div class="keys" data-t="deskKeys"></div>
+    <header class="top" id="top" hidden>
+      <button class="back" id="back" type="button" aria-label="Back">←</button>
+      <button class="brand" id="brand" type="button">Words of Words</button>
+      <ol class="steps" id="steps"></ol>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="ja">日本語</button><button type="button" data-lang="en">English</button>
       </div>
+    </header>
+
+    <section class="screen" id="desk" hidden>
+      <h1 data-t="deskTitle"></h1>
+      <p class="lead" data-t="deskLead"></p>
+      <div class="count"><b id="count-n">0</b> / 8</div>
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="#6b7280" stroke-width="1.6" fill="none"/><path d="M11 11l3.5 3.5" stroke="#6b7280" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input id="q" type="search" autocomplete="off" spellcheck="false" lang="en">
+      </label>
+      <div class="cards" id="cards" role="group"></div>
+      <div class="picked">
+        <div class="h"><b data-t="picked"></b><span id="picked-n"></span></div>
+        <div class="slots" id="slots"></div>
+      </div>
+      <button class="btn primary startbtn" id="open" type="button"></button>
     </section>
 
     <section class="screen" id="fill" hidden>
-      <div class="frame hud">
-        <div class="picks" id="hud-picks"></div>
-        <div class="stat"><span class="k" data-t="reach"></span><span class="v" id="hud-count">0</span><span class="k">/ 127,223</span><span class="p" id="hud-pct">0.0%</span></div>
-        <div class="stat"><span class="k" data-t="wave"></span><span class="w" id="hud-wave">0/8</span></div>
+      <h1 id="fill-title"></h1>
+      <p class="lead" data-t="fillLead"></p>
+      <ol class="legend" id="legend"></ol>
+      <div class="field" id="field"><canvas id="cv" width="1392" height="660"></canvas></div>
+      <svg class="mascot" aria-hidden="true"><use href="#mascot"/></svg>
+      <div class="bubble" id="bubble"></div>
+      <div class="ticker" id="ticker" lang="en"></div>
+      <div class="status">
+        <div class="pill"><span id="fill-state"></span><b id="fill-count">0</b><span id="fill-pct"></span></div>
+        <button class="btn" id="fill-btn" type="button"></button>
       </div>
-      <div class="frame leaf">
-        <div class="head"><span data-t="leafHead"></span><span id="leaf-page"></span></div>
-        <div class="body" id="leaf-body"></div>
-      </div>
-      <div class="frame log">
-        <h3 data-t="logTitle"></h3>
-        <ol id="log"></ol>
-      </div>
-      <div class="fillbar"><span class="keys" id="fill-keys"></span><button id="fill-btn" type="button"></button></div>
     </section>
 
-    <section class="screen" id="colophon" hidden>
-      <div class="frame">
-        <h2 class="colo-title" data-t="coloTitle"></h2>
-        <div class="you">
-          <div class="label" data-t="yourWords"></div>
-          <div class="chips" id="colo-picks"></div>
-          <div class="label" data-t="yourReach"></div>
-          <div class="num" id="colo-num"></div>
-          <div class="pct" id="colo-pct"></div>
-          <div class="scale" id="colo-scale"></div>
-        </div>
-        <ol class="refs" id="refs"></ol>
-        <div class="colo-foot">
-          <div><p data-t="meaning"></p><div class="credit" data-t="credit"></div></div>
-          <div class="btns"><button id="again" type="button" data-t="again"></button><button id="to-door" type="button" data-t="toDoor"></button></div>
-        </div>
+    <section class="screen" id="result" hidden>
+      <h1 id="res-title"></h1>
+      <p class="lead" id="res-lead"></p>
+      <div class="chips" id="chips"></div>
+      <div class="refs"><h3 data-t="refsTitle"></h3><ol id="refs"></ol></div>
+      <div class="donut">
+        <svg viewBox="0 0 200 200" aria-hidden="true">
+          <circle cx="100" cy="100" r="84" fill="none" stroke="#ebe7e0" stroke-width="18"/>
+          <circle id="arc" cx="100" cy="100" r="84" fill="none" stroke="#4a86e0" stroke-width="18" stroke-linecap="round" stroke-dasharray="0 528"/>
+        </svg>
+        <div class="in"><b id="res-pct"></b><span id="res-frac"></span><small data-t="headwords"></small></div>
       </div>
+      <div class="rbtns"><button class="btn" id="again" type="button" data-t="again"></button><button class="btn primary" id="share" type="button" data-t="share"></button></div>
+      <div class="toast" id="toast" aria-live="polite"></div>
+      <p class="meaning" data-t="meaning"></p>
+      <div class="credit" data-t="credit"></div>
+      <svg class="mascot" aria-hidden="true"><use href="#mascot"/></svg>
     </section>
   </div>
 </div>
@@ -218,95 +294,125 @@ html[lang="en"] .toc li .n { width: 5em; }
     { key: "refBest", n: 94836, best: true },
     { key: "refBasic", n: 97689 },
     { key: "refThing", n: 97924 },
+    { key: "refAll", seeds: 1458 },
   ];
   // 候補30語。並びは固定で混ぜてある
   const CANDS = ["water", "time", "more", "love", "person", "state", "light", "give", "quality", "mother",
     "small", "move", "word", "people", "sun", "part", "language", "know", "make", "fire",
     "use", "body", "life", "act", "place", "good", "characteristic", "thing", "cause", "see"];
+  // 候補30語の日本語の第一原義。日本語表示のときだけ（）で添える
+  const GLOSS = {
+    water: "水", time: "時間", more: "より多くの", love: "愛", person: "人", state: "状態", light: "光",
+    give: "与える", quality: "質", mother: "母", small: "小さい", move: "動く", word: "単語", people: "人々",
+    sun: "太陽", part: "部分", language: "言語", know: "知っている", make: "作る", fire: "火", use: "使う",
+    body: "体", life: "生命", act: "行為", place: "場所", good: "良い", characteristic: "特徴", thing: "物",
+    cause: "原因", see: "見る",
+  };
+  // 種語ごとの色。波0（機能語だけで読める語）は灰色
+  const COLORS = ["#4a86e0", "#ee7f9a", "#f19a4c", "#4fb486", "#9474dc", "#e8b931", "#3fb6cf", "#c07bd8"];
+  const BASE_COLOR = "#b8b1a5";
 
   const T = {
     ja: {
-      brand: "ことばで、ことばを",
+      doorHead: "英英辞書は、<br>何語から書ける？",
+      doorBody: "英英辞書の中で、少ない種語から<br>どれだけの言葉にたどり着けるか。<br>定義のつながりをたどるゲームです。",
+      doorTag: "Start with a few words.<br>See how far they reach.",
+      start: "はじめる", howto: "遊び方", close: "閉じる",
       chapters: [
         ["辞書は定義の循環", "英英辞書の定義は、別の見出し語で書かれています。その語の定義も、また別の見出し語でできています。たどり続けると、いつか同じ語に戻ってきます。"],
         ["種語とは何か", "循環の外から持ち込む、定義なしで知っている語を種語と呼びます。種語と機能語だけで定義が読めた語は既知になり、次の定義を読む材料になります。"],
-        ["このゲームは理解ではなく到達", "候補30語から種語を8語選び、127,223語の辞書がどこまで埋まるかを数えます。数えるのは定義の文字列をたどれた語で、意味が分かった語ではありません。"],
+        ["数えるのは理解ではなく到達", "種語を8語選び、127,223語の辞書がどこまで埋まるかを数えます。数えるのは定義の文字列をたどれた語で、意味が分かった語ではありません。"],
       ],
-      tocTitle: "目次",
-      tocParts: [["机", "種語を8語選ぶ"], ["頁", "辞書が埋まる"], ["奥付", "結果"]],
-      tocLeft: "左頁",
-      doorKeys: "Enterで次へ",
-      toDesk: "机に向かう",
-      deskLead: "札を8枚選んで下の枠に置きます。置いた札をもう一度押すと机に戻ります。",
-      trayLabel: "種語の枠",
-      open: "開く",
-      deskKeys: "矢印で札を移動、Enterで出し入れ、Backspaceで最後の枠を外す、Escで扉へ",
-      reach: "到達", wave: "波",
-      leafHead: "あなたの辞書",
-      page: (n) => `第${n}頁`,
-      logTitle: "開いた語と、開いた定義",
-      seedTag: "種語",
+      steps: ["語を選ぶ", "広がる", "結果"],
+      deskTitle: "種語を8語選んでください",
+      deskLead: "選んだ8語から、辞書の見出し語にどこまでたどり着けるかを数えます。",
+      search: "単語を検索…",
+      searchLoading: "辞書を読み込んでいます。",
+      noHit: "該当する語がありません。機能語（the、of、haveなど）は最初から既知なので選べません。",
+      picked: "選んだ語",
+      open: "この8語で始める →",
+      openLeft: (n) => `あと${n}語`,
+      fillTitle: "言葉が広がっています…", fillTitleDone: "ここまで広がりました",
+      fillLead: "選んだ種語から、定義をたどって辞書の中の言葉にたどり着いています。",
+      bubble: "どんどん広がってる！", bubbleDone: "ここまで届いた！",
       loading: "辞書を開いています。",
       loadErr: "辞書のデータを読み込めませんでした。ページを再読み込みしてください。",
-      skip: "飛ばす", toColophon: "奥付へ",
-      fillKeys: "Enterで飛ばす、Escで扉へ", fillKeysDone: "Enterで奥付へ、Escで扉へ",
-      coloTitle: "奥付",
-      yourWords: "あなたの8語", yourReach: "あなたの到達",
-      ofTotal: (p) => `127,223語中 ${p}`,
-      refBest: "move, use, person, place, cause, time, language, quality",
-      refBasic: "Basic English（機能語を除く781語）",
-      refThing: "Thing Explainer（機能語と変化形を除く788語）",
-      refVal: (n, p) => `${n}（${p}）`,
+      exploring: "探索中…", reached: "到達",
+      words: (n) => `${n}語`,
+      skip: "飛ばす", toResult: "結果へ →",
+      seedTag: "種語",
+      resTitle: (n) => `<span class="num">${n}</span>語に到達しました！`,
+      resLead: (p) => `選んだ8語から、英英辞書の${p}の見出し語にたどり着きました。`,
+      headwords: "見出し語",
+      refsTitle: "ほかの結果との比較",
+      refBest: "move, use, person, place, cause, time, language, qualityの8語",
       bestNote: "1語でも抜くと1,318語以下",
+      refBasic: "Basic English（機能語を除く781語）",
+      refThing: "Thing Explainerの語彙（機能語と変化形を除く788語）",
+      refAll: "全語に届く種語の数（貪欲法）",
+      refVal: (n, p) => `${n}語<span>（${p}）</span>`,
+      refSeeds: (n) => `${n}語<span>（100%）</span>`,
+      again: "もう一度遊ぶ", share: "結果をシェア",
+      shareText: (n, p, w) => `Words of Wordsで、${w}の8語から英英辞書の${n}語（${p}）に到達しました。`,
+      copied: "結果の文をコピーしました。", copyFail: "コピーできませんでした。",
       meaning: "到達は「定義の文字列をたどれた」ことで、「意味が分かった」ことではありません。",
       credit: "辞書 Open English WordNet 2025（CC BY 4.0）",
-      again: "もう一度", toDoor: "扉へ",
     },
     en: {
-      brand: "Words, made of words",
+      doorHead: "How few words<br>write a dictionary?",
+      doorBody: "Start from a handful of seed words and see<br>how many entries of an English dictionary<br>you can reach by following definitions.",
+      doorTag: "Start with a few words.<br>See how far they reach.",
+      start: "Start", howto: "How to play", close: "Close",
       chapters: [
         ["A dictionary is a circle of definitions", "Every definition in an English dictionary is written with other entries. Their definitions are made of yet more entries. Follow them long enough and you return to a word you started from."],
         ["What a seed word is", "A seed is a word you bring in from outside the circle, known without a definition. Any entry you can read using only seeds and function words becomes known, and helps read the next one."],
-        ["This game counts reach, not understanding", "Choose 8 seeds from 30 candidates and count how much of a 127,223-entry dictionary fills in. What is counted is whether the definitions can be followed, not whether the meaning is understood."],
+        ["This game counts reach, not understanding", "Choose 8 seeds and count how much of a 127,223-entry dictionary fills in. What is counted is whether the definitions can be followed, not whether the meaning is understood."],
       ],
-      tocTitle: "Contents",
-      tocParts: [["Desk", "Choose 8 seeds"], ["Page", "The dictionary fills in"], ["Colophon", "Result"]],
-      tocLeft: "left page",
-      doorKeys: "Enter to continue",
-      toDesk: "Go to the desk",
-      deskLead: "Pick 8 cards and place them in the slots below. Press a placed card again to return it.",
-      trayLabel: "Seed slots",
-      open: "Open",
-      deskKeys: "Arrows move, Enter places or returns, Backspace clears the last slot, Esc to the title",
-      reach: "Reached", wave: "Wave",
-      leafHead: "Your dictionary",
-      page: (n) => `Page ${n}`,
-      logTitle: "Opened entry and the definition that opened it",
-      seedTag: "seed",
+      steps: ["Choose", "Spread", "Result"],
+      deskTitle: "Choose 8 seed words",
+      deskLead: "We count how many dictionary entries your 8 words can reach.",
+      search: "Search a word…",
+      searchLoading: "Loading the dictionary.",
+      noHit: "No matching entry. Function words (the, of, have…) are known from the start and cannot be chosen.",
+      picked: "Your seeds",
+      open: "Start with these 8 →",
+      openLeft: (n) => `${n} more to go`,
+      fillTitle: "Words are spreading…", fillTitleDone: "This is how far they spread",
+      fillLead: "Following definitions out from your seeds into the dictionary.",
+      bubble: "Spreading out!", bubbleDone: "Look how far!",
       loading: "Opening the dictionary.",
       loadErr: "The dictionary data could not be loaded. Reload the page to try again.",
-      skip: "Skip", toColophon: "Colophon",
-      fillKeys: "Enter to skip, Esc to the title", fillKeysDone: "Enter for the colophon, Esc to the title",
-      coloTitle: "Colophon",
-      yourWords: "Your 8 seeds", yourReach: "Your reach",
-      ofTotal: (p) => `${p} of 127,223`,
+      exploring: "Exploring…", reached: "Reached",
+      words: (n) => `${n} entries`,
+      skip: "Skip", toResult: "Result →",
+      seedTag: "seed",
+      resTitle: (n) => `Reached <span class="num">${n}</span> entries!`,
+      resLead: (p) => `From your 8 seeds you reached ${p} of the dictionary's headwords.`,
+      headwords: "headwords",
+      refsTitle: "Compared with other sets",
       refBest: "move, use, person, place, cause, time, language, quality",
+      bestNote: "remove any one and it falls to 1,318 or fewer",
       refBasic: "Basic English (781 words, function words removed)",
       refThing: "Thing Explainer (788 words, function words and inflections removed)",
-      refVal: (n, p) => `${n} (${p})`,
-      bestNote: "Remove any one word and it falls to 1,318 or fewer",
+      refAll: "Seeds needed to reach every entry (greedy)",
+      refVal: (n, p) => `${n}<span>(${p})</span>`,
+      refSeeds: (n) => `${n} words<span>(100%)</span>`,
+      again: "Play again", share: "Share",
+      shareText: (n, p, w) => `On Words of Words, my 8 seeds (${w}) reached ${n} entries (${p}) of an English dictionary.`,
+      copied: "Copied the result text.", copyFail: "Could not copy.",
       meaning: "Reached means the definition strings could be followed, not that the meaning was understood.",
       credit: "Dictionary: Open English WordNet 2025 (CC BY 4.0)",
-      again: "Again", toDoor: "Title",
     },
   };
 
   const $ = (id) => document.getElementById(id);
-  const state = { lang: "ja", screen: "door", picks: [], focus: 0 };
+  const state = { lang: "ja", screen: "door", picks: [], focus: 0, query: "" };
   const t = (k) => T[state.lang][k];
   const fmt = (n) => n.toLocaleString("en-US");
   const pct = (n) => (n / TOTAL * 100).toFixed(1) + "%";
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const gloss = (w) => (state.lang === "ja" && GLOSS[w] ? `<span class="gloss">（${GLOSS[w]}）</span>` : "");
+  const tint = (c, a) => `color-mix(in srgb, ${c} ${a}%, white)`;
 
   // ---------- 拡大: 整数倍で中央に置く。960x540 に満たないときだけ縮小する ----------
   const stage = $("stage");
@@ -334,103 +440,156 @@ html[lang="en"] .toc li .n { width: 5em; }
         for (let i = G.mem.off[s]; i < G.mem.off[s + 1]; i++) data[fillp[G.mem.data[i]]++] = s;
       wsyn = { off: cnt, data };
       fetch("defs.txt").then((r) => (r.ok ? r.text() : null)).then((d) => { if (d) DEFS = d.split("\n"); }).catch(() => {});
+      if (state.screen === "desk" && state.query) renderCards();
       return G;
     });
+  dataReady.catch(() => {});
 
   // ---------- 画面切り替え ----------
+  const STEP = { desk: 0, fill: 1, result: 2 };
   function go(screen) {
     state.screen = screen;
-    for (const id of ["door", "desk", "fill", "colophon"]) $(id).hidden = id !== screen;
+    for (const id of ["door", "desk", "fill", "result"]) $(id).hidden = id !== screen;
+    $("top").hidden = screen === "door";
+    if (screen !== "door") $("howto").hidden = true;
     if (screen !== "fill") stopFill();
     render();
     if (screen === "door") $("to-desk").focus();
     if (screen === "desk") focusCard(state.focus);
-    if (screen === "colophon") $("again").focus();
+    if (screen === "result") $("share").focus();
   }
 
   function render() {
     document.documentElement.lang = state.lang;
-    $("lang-ja").setAttribute("aria-pressed", state.lang === "ja");
-    $("lang-en").setAttribute("aria-pressed", state.lang === "en");
+    document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.lang === state.lang));
     document.querySelectorAll("[data-t]").forEach((el) => { const v = t(el.dataset.t); if (typeof v === "string") el.textContent = v; });
+    $("steps").innerHTML = t("steps").map((s, i) =>
+      `<li class="${STEP[state.screen] === i ? "on" : ""}"><span class="n">${i + 1}</span>${s}</li>`).join("");
     renderDoor();
     renderDesk();
     if (state.screen === "fill") renderFillStatic();
-    if (state.screen === "colophon") renderColophon();
+    if (state.screen === "result") renderResult();
   }
 
   // ---------- 扉 ----------
   function renderDoor() {
-    const kanji = ["一", "二", "三"];
+    $("door-head").innerHTML = t("doorHead");
+    $("door-body").innerHTML = t("doorBody");
+    $("door-tag").innerHTML = t("doorTag");
     $("chapters").innerHTML = t("chapters").map(([h, p], i) =>
-      `<div class="ch"><h2><span class="n">${state.lang === "ja" ? kanji[i] : i + 1}</span>${h}</h2><p>${p}</p></div>`).join("");
-    $("toc").innerHTML =
-      t("chapters").map(([h], i) => `<li><span class="n">${state.lang === "ja" ? kanji[i] : i + 1}</span><span class="ell">${h}</span><span class="d">${t("tocLeft")}</span></li>`).join("") +
-      t("tocParts").map(([n, d]) => `<li class="part"><span class="n">${n}</span><span class="ell">${d}</span></li>`).join("");
+      `<li><span class="n">${i + 1}</span><b>${h}</b><p>${p}</p></li>`).join("");
   }
   $("to-desk").onclick = () => go("desk");
+  $("howto-open").onclick = () => { $("howto").hidden = false; $("howto-close").focus(); };
+  $("howto-close").onclick = () => { $("howto").hidden = true; $("howto-open").focus(); };
+  $("howto").addEventListener("click", (e) => { if (e.target.id === "howto") $("howto-close").click(); });
 
-  // ---------- 机 ----------
-  function renderDesk() {
-    const full = state.picks.length >= SLOTS;
-    $("cards").innerHTML = CANDS.map((w, i) => {
+  // ---------- 選ぶ ----------
+  function list() {
+    const q = state.query.trim().toLowerCase();
+    if (!q) return CANDS;
+    if (!G) return null;
+    const hits = [];
+    for (const w of G.words) if (w.startsWith(q)) hits.push(w);
+    hits.sort((a, b) => a.length - b.length || (a < b ? -1 : 1));
+    return hits.slice(0, 30);
+  }
+  function renderCards() {
+    const full = state.picks.length >= SLOTS, L = list();
+    if (L === null) { $("cards").innerHTML = `<div class="empty-msg">${esc(t("searchLoading"))}</div>`; return; }
+    if (!L.length) { $("cards").innerHTML = `<div class="empty-msg">${esc(t("noHit"))}</div>`; return; }
+    state.focus = Math.min(state.focus, L.length - 1);
+    $("cards").innerHTML = L.map((w, i) => {
       const placed = state.picks.includes(w);
-      return `<button type="button" class="card${placed ? " placed" : ""}" data-i="${i}" tabindex="${i === state.focus ? 0 : -1}" aria-pressed="${placed}" ${!placed && full ? 'aria-disabled="true"' : ""} lang="en">${w}</button>`;
+      return `<button type="button" class="card${w.length > 10 ? " long" : ""}" data-w="${esc(w)}" data-i="${i}" tabindex="${i === state.focus ? 0 : -1}" aria-pressed="${placed}" ${!placed && full ? 'aria-disabled="true"' : ""}><span class="w" lang="en">${esc(w)}</span>${gloss(w)}</button>`;
     }).join("");
+  }
+  function renderDesk() {
+    $("q").placeholder = t("search");
+    renderCards();
     const slots = [];
     for (let i = 0; i < SLOTS; i++) {
       const w = state.picks[i];
-      slots.push(w ? `<button type="button" class="slot" data-w="${w}" lang="en">${w}</button>` : `<button type="button" class="slot" disabled aria-label="empty"></button>`);
+      slots.push(w ? `<button type="button" class="slot" data-w="${esc(w)}"><span class="w" lang="en">${esc(w)}</span>${gloss(w)}</button>`
+        : `<button type="button" class="slot empty" aria-label="empty">+</button>`);
     }
-    slots.push(`<button type="button" class="open" id="open" ${full ? "" : "disabled"}>${t("open")}</button>`);
     $("slots").innerHTML = slots.join("");
-    $("tray-count").textContent = `${state.picks.length}/${SLOTS}`;
-    $("open").onclick = () => openBook();
+    const n = state.picks.length;
+    $("count-n").textContent = n;
+    $("picked-n").textContent = `${n} / ${SLOTS}`;
+    $("open").disabled = n < SLOTS;
+    $("open").textContent = n < SLOTS ? t("openLeft")(SLOTS - n) : t("open");
   }
   function focusCard(i) {
-    state.focus = Math.max(0, Math.min(CANDS.length - 1, i));
     const cards = $("cards").querySelectorAll(".card");
+    if (!cards.length) return;
+    state.focus = Math.max(0, Math.min(cards.length - 1, i));
     cards.forEach((c, j) => c.tabIndex = j === state.focus ? 0 : -1);
-    cards[state.focus]?.focus();
+    cards[state.focus].focus();
   }
-  function toggle(w) {
+  function toggle(w, refocus = true) {
     const i = state.picks.indexOf(w);
     if (i >= 0) state.picks.splice(i, 1);
     else if (state.picks.length < SLOTS) state.picks.push(w);
     else return;
     renderDesk();
     if (state.picks.length === SLOTS) $("open").focus();
-    else focusCard(state.focus);
+    else if (refocus) focusCard(state.focus);
   }
   $("cards").addEventListener("click", (e) => {
     const b = e.target.closest(".card"); if (!b) return;
     state.focus = +b.dataset.i;
-    toggle(CANDS[state.focus]);
+    toggle(b.dataset.w);
   });
   $("cards").addEventListener("keydown", (e) => {
     const d = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -6, ArrowDown: 6 }[e.key];
     if (d === undefined) return;
     e.preventDefault();
     const n = state.focus + d;
-    if (n >= 0 && n < CANDS.length) focusCard(n);
+    if (n < 0 && e.key === "ArrowUp") { $("q").focus(); return; }
+    if (n >= 0 && n < $("cards").children.length) focusCard(n);
   });
   $("slots").addEventListener("click", (e) => {
-    const b = e.target.closest(".slot"); if (!b || !b.dataset.w) return;
-    state.focus = CANDS.indexOf(b.dataset.w);
-    toggle(b.dataset.w);
+    const b = e.target.closest(".slot"); if (!b) return;
+    if (!b.dataset.w) { $("q").focus(); return; }
+    toggle(b.dataset.w, false);
   });
+  $("q").addEventListener("input", (e) => { state.query = e.target.value; state.focus = 0; renderCards(); });
+  $("q").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const first = $("cards").querySelector(".card");
+      if (first) { toggle(first.dataset.w, false); $("q").focus(); }
+    } else if (e.key === "ArrowDown") { e.preventDefault(); focusCard(0); }
+    else if (e.key === "Escape" && state.query) {
+      e.preventDefault(); e.stopPropagation();
+      state.query = e.target.value = ""; renderCards();
+    }
+  });
+  $("open").onclick = () => openBook();
 
-  // ---------- 頁: 埋める ----------
+  // ---------- 広がる ----------
+  const CW = 696, CH = 330, DPR = 2;
+  const cv = $("cv"), cx = cv.getContext("2d");
   let run = null; // 実行中の演出
   function openBook() {
     if (state.picks.length < SLOTS) return;
     go("fill");
-    $("log").innerHTML = "";
-    $("leaf-body").innerHTML = `<span class="status">${esc(t("loading"))}</span>`;
-    setHud(0, 0, -1);
+    cx.clearRect(0, 0, cv.width, cv.height);
+    $("field").querySelectorAll(".node").forEach((n) => n.remove());
+    $("ticker").textContent = t("loading");
+    setHud(0, -1);
     $("fill-btn").disabled = true;
-    dataReady.then(() => { if (state.screen === "fill") startFill(); })
-      .catch(() => { $("leaf-body").innerHTML = `<span class="status">${esc(t("loadErr"))}</span>`; });
+    dataReady.then(() => {
+      if (state.screen !== "fill") return;
+      if (!state.picks.every((w) => G.index.has(w))) { state.picks = state.picks.filter((w) => G.index.has(w)); go("desk"); return; }
+      startFill();
+    })
+      .catch(() => { $("ticker").textContent = t("loadErr"); });
+  }
+
+  function mulberry(a) {
+    return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let x = Math.imul(a ^ a >>> 15, 1 | a); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
   }
 
   function startFill() {
@@ -443,15 +602,68 @@ html[lang="en"] .toc li .n { width: 5em; }
     res.order.forEach((w, i) => { pos[w] = i; });
     const seedAt = new Set();
     for (let i = 0; i < SLOTS; i++) if (pos[ids[i]] === bounds[i]) seedAt.add(ids[i]);
-    run = { res, bounds, pos, seedAt, wave: 0, idx: 0, t0: 0, page: 1, raf: 0, lastLog: 0, done: false };
-    $("leaf-body").innerHTML = "";
-    $("leaf-page").textContent = t("page")(1);
+    // 点の配置は見た目だけ。種語ごとに円周上の中心を置き、到達数に応じた雲を描く
+    let h = 7; for (const ch of state.picks.join(" ")) h = Math.imul(h ^ ch.charCodeAt(0), 2654435761);
+    const rnd = mulberry(h);
+    const centers = [[CW / 2, CH / 2]];
+    for (let i = 0; i < SLOTS; i++) {
+      const a = -Math.PI / 2 + i * Math.PI * 2 / SLOTS + (rnd() - 0.5) * 0.35;
+      centers.push([CW / 2 + Math.cos(a) * CW * 0.34, CH / 2 + Math.sin(a) * CH * 0.34]);
+    }
+    const clouds = [];
+    for (let k = 0; k <= SLOTS; k++) {
+      const n = bounds[k] - (k ? bounds[k - 1] : 0);
+      const nd = n <= 0 ? 0 : Math.round(Math.min(n, 4 + 14 * Math.sqrt(n)));
+      const R = Math.min(CW * 0.6, 12 + 3.4 * Math.sqrt(nd));
+      const [ox, oy] = centers[k], pts = [];
+      while (pts.length < nd) {
+        const a = rnd() * Math.PI * 2, d = R * Math.pow(rnd(), 0.62);
+        const x = ox + Math.cos(a) * d, y = oy + Math.sin(a) * d * 0.82;
+        if (x < 4 || x > CW - 4 || y < 4 || y > CH - 4) continue;
+        pts.push([x, y, 0.9 + rnd() * 1.5]);
+      }
+      clouds.push({ pts, drawn: 0, color: k ? COLORS[k - 1] : BASE_COLOR, ox, oy });
+    }
+    run = { res, bounds, pos, seedAt, clouds, centers, wave: 0, idx: 0, t0: 0, raf: 0, lastLog: 0, done: false };
+    $("field").querySelectorAll(".node").forEach((n) => n.remove());
+    state.picks.forEach((w, i) => {
+      const el = document.createElement("div");
+      el.className = "node"; el.lang = "en";
+      el.style.left = (centers[i + 1][0] / CW * 100) + "%";
+      el.style.top = (centers[i + 1][1] / CH * 100) + "%";
+      el.style.color = COLORS[i];
+      el.innerHTML = `<i style="background:${COLORS[i]}"></i>${esc(w)}`;
+      $("field").appendChild(el);
+    });
+    $("ticker").textContent = "";
     $("fill-btn").disabled = false;
     renderFillStatic();
     $("fill-btn").focus();
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduce || document.hidden) finishFill();
     else run.raf = requestAnimationFrame(tick);
+  }
+
+  // 波 k の点を、その波で到達した割合 f まで描く
+  function drawCloud(k, f) {
+    const c = run.clouds[k], upto = Math.round(c.pts.length * f);
+    if (upto <= c.drawn) return;
+    cx.save();
+    cx.scale(DPR, DPR);
+    cx.strokeStyle = c.color;
+    cx.fillStyle = c.color;
+    for (let i = c.drawn; i < upto; i++) {
+      const [x, y, r] = c.pts[i];
+      if (i % 5 === 0) {
+        cx.globalAlpha = 0.07;
+        cx.lineWidth = 0.6;
+        cx.beginPath(); cx.moveTo(c.ox, c.oy); cx.lineTo(x, y); cx.stroke();
+      }
+      cx.globalAlpha = 0.6;
+      cx.beginPath(); cx.arc(x, y, r, 0, Math.PI * 2); cx.fill();
+    }
+    cx.restore();
+    c.drawn = upto;
   }
 
   const waveDur = (n) => Math.min(4200, Math.max(650, 500 + n * 0.04));
@@ -465,53 +677,38 @@ html[lang="en"] .toc li .n { width: 5em; }
     const x = Math.min(1, (now - run.t0) / dur);
     const target = a + Math.round(n * (1 - Math.pow(1 - x, 2)));
     if (target > run.idx) {
-      // 表示だけ間引く: 1コマに最大4語を頁に置く
-      const step = Math.max(1, Math.ceil((target - run.idx) / 4));
-      for (let i = run.idx; i < target; i += step) putWord(res.order[i]);
-      if (now - run.lastLog > 140) { addLog(res.order[target - 1]); run.lastLog = now; }
       run.idx = target;
+      if (now - run.lastLog > 260) { addLog(res.order[target - 1]); run.lastLog = now; }
     }
-    setHud(run.idx, run.wave, run.wave);
+    drawCloud(run.wave, n ? (run.idx - a) / n : 1);
+    setHud(run.idx, run.wave);
     if (x >= 1) {
       if (run.wave === SLOTS) return finishFill();
       run.wave++; run.t0 = now;
-      if (bounds[run.wave] > bounds[run.wave - 1]) {
-        // 波の先頭（ふつうは種語）は必ず頁に置く
-        putWord(res.order[run.idx]); addLog(res.order[run.idx]); run.idx++;
-      }
+      showNode(run.wave);
+      if (bounds[run.wave] > bounds[run.wave - 1]) addLog(res.order[run.idx]);
     }
     run.raf = requestAnimationFrame(tick);
+  }
+  function showNode(k) {
+    const el = $("field").querySelectorAll(".node")[k - 1];
+    if (el) el.classList.add("on");
   }
   function finishFill() {
     if (!run) return;
     cancelAnimationFrame(run.raf);
     run.done = true;
     run.idx = run.res.count;
-    setHud(run.res.count, SLOTS, -1);
-    if (!$("log").children.length) addLog(run.res.order[run.res.count - 1]);
+    for (let k = 0; k <= SLOTS; k++) { drawCloud(k, 1); if (k) showNode(k); }
+    run.wave = SLOTS;
+    setHud(run.res.count, -1);
+    if (!$("ticker").textContent) addLog(run.res.order[run.res.count - 1]);
     renderFillStatic();
     $("fill-btn").focus();
   }
   function stopFill() { if (run) { cancelAnimationFrame(run.raf); run = null; } }
   document.addEventListener("visibilitychange", () => { if (document.hidden && run && !run.done) finishFill(); });
 
-  function putWord(w) {
-    const body = $("leaf-body");
-    const span = document.createElement("span");
-    span.textContent = G.words[w];
-    span.lang = "en";
-    if (run.seedAt.has(w)) span.className = "seed";
-    body.appendChild(span);
-    body.appendChild(document.createTextNode(" "));
-    if (body.scrollHeight > body.clientHeight) {
-      // 頁が埋まったらめくる
-      run.page++;
-      $("leaf-page").textContent = t("page")(run.page);
-      body.textContent = "";
-      body.appendChild(span);
-      body.appendChild(document.createTextNode(" "));
-    }
-  }
   function openedBy(w) {
     if (run.seedAt.has(w)) return -2;
     const p = run.pos[w];
@@ -526,64 +723,84 @@ html[lang="en"] .toc li .n { width: 5em; }
     }
     return -1;
   }
+  // 最後に開いた語と、それを開いた定義を1行で出す（到達順から逆算した表示専用の値）
   function addLog(w) {
     const s = openedBy(w);
-    let def;
-    if (s === -2) def = `<span class="tag">${esc(t("seedTag"))}</span>`;
-    else if (s >= 0) {
-      const txt = DEFS ? DEFS[s] : Array.from(G.req.data.subarray(G.req.off[s], G.req.off[s + 1]), (r) => G.words[r]).join(", ");
-      def = `<span class="def">${esc(txt)}</span>`;
-    } else def = "";
-    const li = document.createElement("li");
-    li.className = "ell";
-    li.lang = "en";
-    li.innerHTML = `<span class="hw${s === -2 ? " seed" : ""}">${esc(G.words[w])}</span> ← ${def}`;
-    const log = $("log");
-    log.prepend(li);
-    while (log.children.length > 14) log.lastChild.remove();
+    let def = "";
+    if (s === -2) def = t("seedTag");
+    else if (s >= 0) def = DEFS ? DEFS[s] : Array.from(G.req.data.subarray(G.req.off[s], G.req.off[s + 1]), (r) => G.words[r]).join(", ");
+    $("ticker").innerHTML = `<b>${esc(G.words[w])}</b> ← ${esc(def)}`;
   }
-  function setHud(count, wave, now) {
-    $("hud-count").textContent = fmt(count);
-    $("hud-pct").textContent = pct(count);
-    $("hud-wave").textContent = `${wave}/${SLOTS}`;
-    $("hud-picks").innerHTML = state.picks.map((w, i) =>
-      `<span lang="en" class="${i + 1 === now ? "now" : i + 1 <= wave ? "done" : ""}">${w}</span>`).join("");
+  function setHud(count, now) {
+    $("fill-count").textContent = t("words")(fmt(count));
+    $("fill-pct").textContent = `(${pct(count)})`;
+    const wave = run ? run.wave : 0, B = run ? run.bounds : null;
+    $("legend").innerHTML = state.picks.map((w, i) => {
+      const k = i + 1, cls = k === now ? "now" : k <= wave ? "done" : "";
+      const plus = B && k <= wave ? `+${fmt(B[k] - B[k - 1])}` : "";
+      return `<li class="${cls}"><span class="dot" style="background:${COLORS[i]}"></span><span class="w"><span lang="en">${esc(w)}</span>${gloss(w)}</span><span class="plus">${plus}</span></li>`;
+    }).join("");
   }
   function renderFillStatic() {
-    const done = !run || run.done;
-    $("fill-btn").textContent = done && run ? t("toColophon") : t("skip");
-    $("fill-keys").textContent = done && run ? t("fillKeysDone") : t("fillKeys");
-    if (run) $("leaf-page").textContent = t("page")(run.page);
-    if (run && run.done) setHud(run.res.count, SLOTS, -1);
+    const done = run && run.done;
+    $("fill-title").textContent = done ? t("fillTitleDone") : t("fillTitle");
+    $("bubble").textContent = done ? t("bubbleDone") : t("bubble");
+    $("fill-state").textContent = done ? t("reached") : t("exploring");
+    $("fill-btn").textContent = done ? t("toResult") : t("skip");
+    setHud(run ? run.idx : 0, done || !run ? -1 : run.wave);
   }
   $("fill-btn").onclick = () => {
     if (!run) return;
     if (!run.done) finishFill();
-    else { state.result = run.res.count; go("colophon"); }
+    else { state.result = run.res.count; go("result"); }
   };
 
-  // ---------- 奥付 ----------
-  function renderColophon() {
+  // ---------- 結果 ----------
+  function renderResult() {
     const n = state.result ?? 0;
     const same = BEST.every((w) => state.picks.includes(w));
-    $("colo-picks").innerHTML = state.picks.map((w) => `<span lang="en">${w}</span>`).join("");
-    $("colo-num").textContent = fmt(n);
-    $("colo-pct").textContent = t("ofTotal")(pct(n));
-    const x = (v) => (v / TOTAL * 100).toFixed(2) + "%";
-    $("colo-scale").innerHTML = REFS.map((r) => `<i style="left:${x(r.n)}"></i>`).join("") +
-      `<i class="me" style="left:${x(n)}"></i><span class="t0">0</span><span class="t1">127,223</span>`;
-    $("refs").innerHTML = REFS.map((r) =>
-      `<li class="${r.best && same ? "match" : ""}"><i></i><span class="name"${r.best ? ' lang="en"' : ""}>${esc(t(r.key))}</span><span class="val">${t("refVal")(fmt(r.n), pct(r.n))}</span>` +
-      (r.best ? `<span class="note">${esc(t("bestNote"))}</span>` : "") + `</li>`).join("");
+    $("res-title").innerHTML = t("resTitle")(fmt(n));
+    $("res-lead").textContent = t("resLead")(pct(n));
+    $("chips").innerHTML = state.picks.map((w, i) =>
+      `<span style="background:${tint(COLORS[i], 20)};color:color-mix(in srgb, ${COLORS[i]} 72%, black)"><span lang="en">${esc(w)}</span>${gloss(w)}</span>`).join("");
+    $("res-pct").innerHTML = `${(n / TOTAL * 100).toFixed(1)}<small style="font-size:18px">%</small>`;
+    $("res-frac").textContent = `${fmt(n)} / ${fmt(TOTAL)}`;
+    const L = 2 * Math.PI * 84;
+    $("arc").setAttribute("stroke-dasharray", `${(n / TOTAL * L).toFixed(1)} ${L.toFixed(1)}`);
+    $("refs").innerHTML = REFS.map((r) => {
+      const name = esc(t(r.key)) + (r.best ? `<small>${esc(t("bestNote"))}</small>` : "");
+      const val = r.seeds ? t("refSeeds")(fmt(r.seeds)) : t("refVal")(fmt(r.n), pct(r.n));
+      return `<li class="${r.best && same ? "match" : ""}"><span class="name">${name}</span><span class="val">${val}</span></li>`;
+    }).join("");
   }
   $("again").onclick = () => go("desk");
-  $("to-door").onclick = () => go("door");
+  let toastTimer = 0;
+  function toast(msg) { $("toast").textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("toast").textContent = ""; }, 2400); }
+  $("share").onclick = async () => {
+    const n = state.result ?? 0;
+    const text = t("shareText")(fmt(n), pct(n), state.picks.join(", "));
+    const url = "https://konaito.github.io/words-of-words/";
+    if (navigator.share) {
+      try { await navigator.share({ title: "Words of Words", text, url }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    try { await navigator.clipboard.writeText(`${text} ${url}`); toast(t("copied")); } catch (e) { toast(t("copyFail")); }
+  };
+
+  // ---------- 戻る ----------
+  $("back").onclick = () => go({ desk: "door", fill: "desk", result: "desk" }[state.screen] || "door");
+  $("brand").onclick = () => go("door");
 
   // ---------- キー操作 ----------
   document.addEventListener("keydown", (e) => {
-    const onButton = e.target && e.target.tagName === "BUTTON";
-    if (e.key === "Escape") { e.preventDefault(); go("door"); return; }
-    if (state.screen === "door" && e.key === "Enter" && !onButton) { e.preventDefault(); go("desk"); return; }
+    const tag = e.target && e.target.tagName;
+    const onButton = tag === "BUTTON", inInput = tag === "INPUT";
+    if (e.key === "Escape") {
+      e.preventDefault();
+      if (!$("howto").hidden) $("howto-close").click(); else go("door");
+      return;
+    }
+    if (inInput) return;
+    if (state.screen === "door" && e.key === "Enter" && !onButton && $("howto").hidden) { e.preventDefault(); go("desk"); return; }
     if (state.screen === "desk" && e.key === "Backspace") {
       e.preventDefault();
       if (state.picks.length) { state.picks.pop(); renderDesk(); focusCard(state.focus); }
@@ -603,12 +820,11 @@ html[lang="en"] .toc li .n { width: 5em; }
     try { localStorage.setItem("wow-lang", l); } catch (e) {}
     render();
   }
-  $("lang-ja").onclick = () => setLang("ja");
-  $("lang-en").onclick = () => setLang("en");
+  document.querySelectorAll("[data-lang]").forEach((b) => { b.onclick = () => setLang(b.dataset.lang); });
 
   function start(data) {
     state.lang = data.lang || loadLang();
-    if (Array.isArray(data.picks)) state.picks = data.picks.filter((w) => CANDS.includes(w)).slice(0, SLOTS);
+    if (Array.isArray(data.picks)) state.picks = data.picks.filter((w) => typeof w === "string").slice(0, SLOTS);
     fit();
     go(data.screen === "desk" ? "desk" : "door");
   }
